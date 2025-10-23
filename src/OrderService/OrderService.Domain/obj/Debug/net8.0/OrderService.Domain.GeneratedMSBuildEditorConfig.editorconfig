@@ -8,6 +8,6 @@ build_property.PlatformNeutralAssembly =
 build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = OrderService.Domain
-build_property.ProjectDir = E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Domain\
+build_property.ProjectDir = D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Domain\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 

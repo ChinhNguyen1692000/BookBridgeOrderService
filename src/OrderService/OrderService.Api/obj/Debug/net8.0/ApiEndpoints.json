@@ -1,45 +1,8 @@
 [
   {
     "ContainingType": "OrderService.Api.Controllers.OrderController",
-    "Method": "GetAll",
-    "RelativePath": "api/Order",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "page",
-        "Type": "System.Int32",
-        "IsRequired": false
-      },
-      {
-        "Name": "pageSize",
-        "Type": "System.Int32",
-        "IsRequired": false
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "OrderService.Api.Controllers.OrderController",
-    "Method": "Create",
-    "RelativePath": "api/Order",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "request",
-        "Type": "OrderService.Application.Models.OrderCreateRequest",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "OrderService.Api.Controllers.OrderController",
     "Method": "GetById",
-    "RelativePath": "api/Order/{id}",
+    "RelativePath": "api/orders/{id}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -55,7 +18,7 @@
   {
     "ContainingType": "OrderService.Api.Controllers.OrderController",
     "Method": "Cancel",
-    "RelativePath": "api/Order/{id}/cancel",
+    "RelativePath": "api/orders/{id}/cancel",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
@@ -71,14 +34,14 @@
   {
     "ContainingType": "OrderService.Api.Controllers.OrderController",
     "Method": "Confirm",
-    "RelativePath": "api/Order/{id}/confirm",
+    "RelativePath": "api/orders/{id}/confirm",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
         "Name": "id",
-        "Type": "System.Int32",
+        "Type": "System.Guid",
         "IsRequired": true
       }
     ],
@@ -86,31 +49,15 @@
   },
   {
     "ContainingType": "OrderService.Api.Controllers.OrderController",
-    "Method": "Finish",
-    "RelativePath": "api/Order/{id}/finish",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "OrderService.Api.Controllers.OrderController",
-    "Method": "GetByCustomer",
-    "RelativePath": "api/Order/customer/{customerId}",
+    "Method": "GetByBookstore",
+    "RelativePath": "api/orders/by-bookstore/{bookstoreId}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "customerId",
-        "Type": "System.String",
+        "Name": "bookstoreId",
+        "Type": "System.Int32",
         "IsRequired": true
       },
       {
@@ -127,24 +74,81 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "OrderService.Api.Controllers.WeatherForecastController",
-    "Method": "Get",
-    "RelativePath": "WeatherForecast",
+    "ContainingType": "OrderService.Api.Controllers.OrderController",
+    "Method": "GetByCustomer",
+    "RelativePath": "api/orders/by-customer/{customerId}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": [
+    "Parameters": [
       {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[OrderService.Api.WeatherForecast, OrderService.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
+        "Name": "customerId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
       }
     ],
-    "EndpointName": "GetWeatherForecast"
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "OrderService.Api.Controllers.OrderController",
+    "Method": "GetByCustomerAndStatus",
+    "RelativePath": "api/orders/by-status",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "CustomerId",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "OrderStatus",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "OrderService.Api.Controllers.OrderController",
+    "Method": "GetAll",
+    "RelativePath": "api/orders/list",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
   }
 ]

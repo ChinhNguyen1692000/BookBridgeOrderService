@@ -38,3 +38,23 @@ E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderSer
 E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\OrderService.Infrastructure.pdb
 E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\OrderService.Infrastructure.genruntimeconfig.cache
 E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\ref\OrderService.Infrastructure.dll
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\bin\Debug\net8.0\OrderService.Infrastructure.deps.json
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\bin\Debug\net8.0\OrderService.Infrastructure.runtimeconfig.json
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\bin\Debug\net8.0\OrderService.Infrastructure.dll
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\bin\Debug\net8.0\OrderService.Infrastructure.pdb
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\bin\Debug\net8.0\Common.dll
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\bin\Debug\net8.0\OrderService.Domain.dll
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\bin\Debug\net8.0\Common.pdb
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\bin\Debug\net8.0\OrderService.Domain.pdb
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\OrderService.Infrastructure.csproj.AssemblyReference.cache
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\OrderService.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\OrderService.Infrastructure.AssemblyInfoInputs.cache
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\OrderService.Infrastructure.AssemblyInfo.cs
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\OrderService.Infrastructure.csproj.CoreCompileInputs.cache
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\OrderService.Infrastructure.sourcelink.json
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\OrderSer.30472D0A.Up2Date
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\OrderService.Infrastructure.dll
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\refint\OrderService.Infrastructure.dll
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\OrderService.Infrastructure.pdb
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\OrderService.Infrastructure.genruntimeconfig.cache
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\ref\OrderService.Infrastructure.dll

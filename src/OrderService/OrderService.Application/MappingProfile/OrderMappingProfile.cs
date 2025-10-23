@@ -14,6 +14,7 @@ namespace OrderService.Application.MappingProfile
         public OrderMappingProfile()
         {
             CreateMap<OrderCreateRequest, Order>();
+            CreateMap<OrderUpdateRequest, Order>();
         }
     }
 }

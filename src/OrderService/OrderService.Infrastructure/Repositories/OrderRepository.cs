@@ -10,6 +10,8 @@ namespace OrderService.Infracstructure.Repositories
         public OrderRepository(OrderDbContext context) : base(context) { }
 
         // ======================= PRIVATE HELPERS ======================= //
+
+       
         private async Task<bool> UpdateOrderFieldAsync(int orderId, Action<Order> updateAction)
         {
             var order = await _dbSet.FirstOrDefaultAsync(o => o.Id == orderId);
@@ -21,6 +23,16 @@ namespace OrderService.Infracstructure.Repositories
         }
 
         // ======================= GET METHODS ======================= //
+
+        public async Task<List<Order>> GetOrderByBookstore(int storeId)
+        {
+            return await _dbSet.Where(o => o.BookstoreId == storeId).ToListAsync();
+        }
+        public async Task<List<Order>> GetOrderByCustomerAndStatus(string userId, int orderStatus)
+        {
+            var status = (OrderStatus)orderStatus;
+            return await _dbSet.Include(o => o.OrderItems).Where(o => o.CustomerId.Equals(userId) && o.OrderStatus==status).ToListAsync();
+        }
         public async Task<List<Order>> GetOrdersByCustomerAsync(Guid customerId)
         {
             return await _dbSet
@@ -46,6 +58,7 @@ namespace OrderService.Infracstructure.Repositories
                 .AsNoTracking()
                 .ToListAsync();
         }
+        
 
         // ======================= CREATE / UPDATE ======================= //
         public async Task<bool> CreateOrderAsync(Order order)

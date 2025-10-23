@@ -46,3 +46,15 @@ E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderSer
 E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Domain\obj\Debug\net8.0\refint\OrderService.Domain.dll
 E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Domain\obj\Debug\net8.0\OrderService.Domain.pdb
 E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Domain\obj\Debug\net8.0\ref\OrderService.Domain.dll
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Domain\bin\Debug\net8.0\OrderService.Domain.deps.json
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Domain\bin\Debug\net8.0\OrderService.Domain.dll
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Domain\bin\Debug\net8.0\OrderService.Domain.pdb
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Domain\obj\Debug\net8.0\OrderService.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Domain\obj\Debug\net8.0\OrderService.Domain.AssemblyInfoInputs.cache
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Domain\obj\Debug\net8.0\OrderService.Domain.AssemblyInfo.cs
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Domain\obj\Debug\net8.0\OrderService.Domain.csproj.CoreCompileInputs.cache
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Domain\obj\Debug\net8.0\OrderService.Domain.sourcelink.json
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Domain\obj\Debug\net8.0\OrderService.Domain.dll
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Domain\obj\Debug\net8.0\refint\OrderService.Domain.dll
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Domain\obj\Debug\net8.0\OrderService.Domain.pdb
+D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Domain\obj\Debug\net8.0\ref\OrderService.Domain.dll

@@ -26,5 +26,10 @@ namespace OrderService.Application.Models
         public int Page { get; set; } = 1;
         public int PageSize { get; set; } = 20;
     }
+    public class OrderFilterByCustomerAndStatusRequest
+    {
+        public string CustomerId { get; set; }
+        public int OrderStatus { get; set; }
+    }
 
 }
