@@ -43,7 +43,7 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddAutoMapper(typeof(OrderMappingProfile).Assembly); // Thêm dòng này là dư, đã có dòng trên
 
 builder.Services.AddScoped<IOrderServices, OrderServices>();
-
+builder.Services.AddScoped<PaymentTransactionRepository>();
 builder.Services.AddScoped<OrderRepository>();
 builder.Services.AddScoped<OrderItemRepository>();
 builder.Services.AddScoped<ICacheService, RedisCacheService>();
