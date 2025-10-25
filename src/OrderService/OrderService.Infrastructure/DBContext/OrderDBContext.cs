@@ -32,7 +32,7 @@ namespace OrderService.Infracstructure.DBContext
                       .OnDelete(DeleteBehavior.Cascade);
 
                 // Cấu hình mối quan hệ 1-n (PaymentTransaction-Order)
-                entity.HasOne<PaymentTransaction>() // Order thuộc về 1 PaymentTransaction (hoặc null)
+                entity.HasOne(o => o.PaymentTransaction) // Order thuộc về 1 PaymentTransaction (hoặc null)
                       .WithMany(pt => pt.Orders) // PaymentTransaction có nhiều Orders
                       .HasForeignKey(o => o.PaymentTransactionId)
                       .IsRequired(false) // PaymentTransactionId là nullable

@@ -22,56 +22,6 @@ namespace OrderService.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("OrderService.Domain.Entities.Message", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("EventType")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("LastError")
-                        .HasColumnType("text");
-
-                    b.Property<int>("MessageStatus")
-                        .HasMaxLength(50)
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Payload")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("PublishedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("RetryCount")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ServiceName")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("TraceId")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventType");
-
-                    b.HasIndex("MessageStatus");
-
-                    b.ToTable("Messages");
-                });
-
             modelBuilder.Entity("OrderService.Domain.Entities.Order", b =>
                 {
                     b.Property<int>("Id")
@@ -127,9 +77,6 @@ namespace OrderService.Infrastructure.Migrations
                     b.Property<Guid?>("PaymentTransactionId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("PaymentTransactionId1")
-                        .HasColumnType("uuid");
-
                     b.Property<decimal>("TotalPrice")
                         .HasColumnType("decimal(18,2)");
 
@@ -142,8 +89,6 @@ namespace OrderService.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("PaymentTransactionId");
-
-                    b.HasIndex("PaymentTransactionId1");
 
                     b.ToTable("Orders");
                 });
@@ -208,14 +153,10 @@ namespace OrderService.Infrastructure.Migrations
 
             modelBuilder.Entity("OrderService.Domain.Entities.Order", b =>
                 {
-                    b.HasOne("OrderService.Domain.Entities.PaymentTransaction", null)
+                    b.HasOne("OrderService.Domain.Entities.PaymentTransaction", "PaymentTransaction")
                         .WithMany("Orders")
                         .HasForeignKey("PaymentTransactionId")
                         .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("OrderService.Domain.Entities.PaymentTransaction", "PaymentTransaction")
-                        .WithMany()
-                        .HasForeignKey("PaymentTransactionId1");
 
                     b.Navigation("PaymentTransaction");
                 });

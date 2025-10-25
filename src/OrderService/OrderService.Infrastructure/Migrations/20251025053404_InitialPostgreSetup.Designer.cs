@@ -12,8 +12,8 @@ using OrderService.Infracstructure.DBContext;
 namespace OrderService.Infrastructure.Migrations
 {
     [DbContext(typeof(OrderDbContext))]
-    [Migration("20251019132608_Init")]
-    partial class Init
+    [Migration("20251025053404_InitialPostgreSetup")]
+    partial class InitialPostgreSetup
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,56 +24,6 @@ namespace OrderService.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("OrderService.Domain.Entities.Message", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("EventType")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("LastError")
-                        .HasColumnType("text");
-
-                    b.Property<int>("MessageStatus")
-                        .HasMaxLength(50)
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Payload")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("PublishedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("RetryCount")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ServiceName")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("TraceId")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventType");
-
-                    b.HasIndex("MessageStatus");
-
-                    b.ToTable("Messages");
-                });
 
             modelBuilder.Entity("OrderService.Domain.Entities.Order", b =>
                 {
@@ -121,16 +71,13 @@ namespace OrderService.Infrastructure.Migrations
                     b.Property<int?>("PaymentMethod")
                         .HasColumnType("integer");
 
-                    b.Property<int>("PaymentProvider")
+                    b.Property<int?>("PaymentProvider")
                         .HasColumnType("integer");
 
                     b.Property<int>("PaymentStatus")
                         .HasColumnType("integer");
 
                     b.Property<Guid?>("PaymentTransactionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("PaymentTransactionId1")
                         .HasColumnType("uuid");
 
                     b.Property<decimal>("TotalPrice")
@@ -145,8 +92,6 @@ namespace OrderService.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("PaymentTransactionId");
-
-                    b.HasIndex("PaymentTransactionId1");
 
                     b.ToTable("Orders");
                 });
@@ -211,14 +156,10 @@ namespace OrderService.Infrastructure.Migrations
 
             modelBuilder.Entity("OrderService.Domain.Entities.Order", b =>
                 {
-                    b.HasOne("OrderService.Domain.Entities.PaymentTransaction", null)
+                    b.HasOne("OrderService.Domain.Entities.PaymentTransaction", "PaymentTransaction")
                         .WithMany("Orders")
                         .HasForeignKey("PaymentTransactionId")
                         .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("OrderService.Domain.Entities.PaymentTransaction", "PaymentTransaction")
-                        .WithMany()
-                        .HasForeignKey("PaymentTransactionId1");
 
                     b.Navigation("PaymentTransaction");
                 });
