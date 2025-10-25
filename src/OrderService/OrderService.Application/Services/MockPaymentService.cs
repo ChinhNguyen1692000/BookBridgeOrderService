@@ -7,7 +7,7 @@ namespace OrderService.Application.Services.Payment
     public class MockPaymentService : IPaymentService
     {
         // Mock provider: generate a fake URL representing QR or payment page
-        public Task<PaymentResult> InitiatePaymentAsync(PaymentTransaction transaction)
+        public Task<PaymentResult> InitiatePaymentAsync(PaymentTransaction transaction, string clientIpAddress)
         {
             // Giả lập logic khởi tạo thanh toán thành công
             var mockResult = new PaymentResult

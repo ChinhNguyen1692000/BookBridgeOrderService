@@ -13,12 +13,15 @@ using OrderService.Infracstructure.DBContext;
 using OrderService.Infracstructure.Repositories;
 using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
-using OrderService.Application.Models;
+using OrderService.Application.Models; // Namespace này có thể chứa VNPayConfig cũ
+using Microsoft.Extensions.Logging;
+
+// Đặt bí danh cho VNPayConfig cần sử dụng để tránh lỗi CS0104 (tham chiếu mơ hồ)
+using VNPayConfig = OrderService.Application.Services.Payment.VNPayConfig; 
+using IPaymentService = OrderService.Application.Interface.IPaymentService; // Đặt bí danh cho interface
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
-
-
 
 
 // Add services to the container.
@@ -31,24 +34,34 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<OrderDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("OrderServiceConnection"));
-
-    // Chỉ cần một LogLevel
     options.LogTo(Console.WriteLine, LogLevel.Information);
-
     options.EnableSensitiveDataLogging();
 });
 
 
-
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddAutoMapper(typeof(OrderMappingProfile).Assembly); // Thêm dòng này là dư, đã có dòng trên
 
 builder.Services.AddScoped<IOrderServices, OrderServices>();
 
 builder.Services.AddScoped<OrderRepository>();
 builder.Services.AddScoped<OrderItemRepository>();
 builder.Services.AddScoped<ICacheService, RedisCacheService>();
+
+// =========================================================================
+// 🎯 ĐĂNG KÝ CẤU HÌNH VÀ PAYMENT SERVICE (ĐÃ CHUẨN HÓA VÀ FIX LỖI)
+// =========================================================================
+
+// 1. Đăng ký Cấu hình VNPay: Sử dụng IOptions Pattern (Cách chuẩn để đọc config vào service)
 builder.Services.Configure<VNPayConfig>(
-    builder.Configuration.GetSection("VNPaySettings"));
+    builder.Configuration.GetSection("VNPaySettings")); 
+
+// 2. Đăng ký Payment Service
+// LƯU Ý: Không cần đăng ký VNPayConfig là Singleton/Scoped riêng, 
+// nó sẽ được injected vào VNPayService thông qua IOptions<VNPayConfig>
+builder.Services.AddScoped<IPaymentService, VNPayService>(); 
+
+// =========================================================================
 
 
 // 3. JWT
@@ -71,7 +84,7 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = jwtIssuer,
         ValidAudience = jwtAudience,
         IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
         NameClaimType = "nameid"
     };
 
@@ -79,7 +92,7 @@ builder.Services.AddAuthentication(options =>
     {
         OnTokenValidated = async context =>
         {
-            var jti = context.Principal.FindFirstValue(JwtRegisteredClaimNames.Jti);
+            var jti = context.Principal!.FindFirstValue(JwtRegisteredClaimNames.Jti);
 
             if (string.IsNullOrEmpty(jti))
             {
@@ -97,14 +110,10 @@ builder.Services.AddAuthentication(options =>
             await Task.CompletedTask;
         }
     };
-
 });
 
 
-// Payment service: mock for now
-builder.Services.AddScoped<IPaymentService, VNPayService>(); // Thay thế MockService
-builder.Services.AddAutoMapper(typeof(OrderMappingProfile).Assembly);
-
+// Swagger/OpenAPI Configuration
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Your API Name", Version = "v1" });
@@ -116,11 +125,10 @@ builder.Services.AddSwaggerGen(c =>
         Description = "Vui lòng nhập Bearer Token vào trường text bên dưới. Ví dụ: 'Bearer {token}'",
         Name = "Authorization",
         Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer" // Phải là "Bearer"
+        Scheme = "Bearer"
     });
 
     // 2. Yêu cầu Security (Security Requirement)
-    // Áp dụng định nghĩa "Bearer" cho tất cả các endpoint (hoặc chỉ những cái cần)
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -129,7 +137,7 @@ builder.Services.AddSwaggerGen(c =>
                 Reference = new OpenApiReference
                 {
                     Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer" // Tham chiếu đến tên của Security Scheme ở trên
+                    Id = "Bearer"
                 }
             },
             new string[] {}
@@ -137,9 +145,11 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+
+// Redis Configuration
 var redisConnection = builder.Configuration.GetConnectionString("Redis") ?? Environment.GetEnvironmentVariable("ConnectionStrings__Redis");
 
-if (redisConnection.StartsWith("redis://"))
+if (redisConnection!.StartsWith("redis://"))
 {
     redisConnection = redisConnection.Replace("redis://", "");
 }
@@ -158,28 +168,17 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 });
 
 
-// Đọc cấu hình từ appsettings.json
-var vnpayConfig = builder.Configuration.GetSection("VnPayConfig").Get<VnPayConfig>();
-builder.Services.AddSingleton(vnpayConfig); // Đăng ký Singleton
-builder.Services.AddScoped<IPaymentService, VNPayService>();
-
-
-
 var app = builder.Build();
 
 
 // Tự động áp dụng migrations VÀ XỬ LÝ LỖI
 using (var scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider; // <-- chỉ tồn tại trong scope này
+    var services = scope.ServiceProvider; 
     try
     {
-        // Lấy DbContext đã đăng ký
         var context = services.GetRequiredService<OrderDbContext>();
-
-        // Tự động áp dụng migration
         context.Database.Migrate();
-        // -------------------------------
         Console.WriteLine("Database migration applied successfully.");
     }
     catch (Exception ex)
@@ -197,7 +196,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// app.UseHttpsRedirection();
+// app.UseHttpsRedirection(); // Đã comment
 
 app.UseAuthentication();
 app.UseAuthorization();
