@@ -11,7 +11,7 @@ namespace OrderService.Application.Interface
         /// Initiate payment for a transaction: return paymentUrl + txId
         /// (Sửa để nhận PaymentTransaction thay vì Order)
         /// </summary>
-        Task<PaymentResult> InitiatePaymentAsync(PaymentTransaction paymentTransaction); // <- ĐÃ SỬA
+        Task<PaymentResult> InitiatePaymentAsync(PaymentTransaction paymentTransaction, string customerIpAddress); // <- ĐÃ SỬA
 
         /// <summary>
         /// Verify or handle provider callback; returns whether payment succeeded

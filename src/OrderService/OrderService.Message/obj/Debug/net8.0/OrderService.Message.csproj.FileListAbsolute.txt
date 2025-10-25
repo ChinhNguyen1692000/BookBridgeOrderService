@@ -34,18 +34,6 @@ E:\check-merge\bookbridge-backend\src\Services\OrderService\OrderService.Message
 E:\check-merge\bookbridge-backend\src\Services\OrderService\OrderService.Message\obj\Debug\net8.0\refint\OrderService.Message.dll
 E:\check-merge\bookbridge-backend\src\Services\OrderService\OrderService.Message\obj\Debug\net8.0\OrderService.Message.pdb
 E:\check-merge\bookbridge-backend\src\Services\OrderService\OrderService.Message\obj\Debug\net8.0\ref\OrderService.Message.dll
-E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Message\bin\Debug\net8.0\OrderService.Message.deps.json
-E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Message\bin\Debug\net8.0\OrderService.Message.dll
-E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Message\bin\Debug\net8.0\OrderService.Message.pdb
-E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Message\obj\Debug\net8.0\OrderService.Message.GeneratedMSBuildEditorConfig.editorconfig
-E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Message\obj\Debug\net8.0\OrderService.Message.AssemblyInfoInputs.cache
-E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Message\obj\Debug\net8.0\OrderService.Message.AssemblyInfo.cs
-E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Message\obj\Debug\net8.0\OrderService.Message.csproj.CoreCompileInputs.cache
-E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Message\obj\Debug\net8.0\OrderService.Message.sourcelink.json
-E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Message\obj\Debug\net8.0\OrderService.Message.dll
-E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Message\obj\Debug\net8.0\refint\OrderService.Message.dll
-E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Message\obj\Debug\net8.0\OrderService.Message.pdb
-E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Message\obj\Debug\net8.0\ref\OrderService.Message.dll
 D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Message\bin\Debug\net8.0\OrderService.Message.deps.json
 D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Message\bin\Debug\net8.0\OrderService.Message.dll
 D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Message\bin\Debug\net8.0\OrderService.Message.pdb
@@ -58,3 +46,15 @@ D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\Or
 D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Message\obj\Debug\net8.0\refint\OrderService.Message.dll
 D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Message\obj\Debug\net8.0\OrderService.Message.pdb
 D:\LapTrinh\PRM_BOOK\bookbridge-order\BookBridgeOrderService\src\OrderService\OrderService.Message\obj\Debug\net8.0\ref\OrderService.Message.dll
+E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Message\bin\Debug\net8.0\OrderService.Message.deps.json
+E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Message\bin\Debug\net8.0\OrderService.Message.dll
+E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Message\bin\Debug\net8.0\OrderService.Message.pdb
+E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Message\obj\Debug\net8.0\OrderService.Message.GeneratedMSBuildEditorConfig.editorconfig
+E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Message\obj\Debug\net8.0\OrderService.Message.AssemblyInfoInputs.cache
+E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Message\obj\Debug\net8.0\OrderService.Message.AssemblyInfo.cs
+E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Message\obj\Debug\net8.0\OrderService.Message.csproj.CoreCompileInputs.cache
+E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Message\obj\Debug\net8.0\OrderService.Message.sourcelink.json
+E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Message\obj\Debug\net8.0\OrderService.Message.dll
+E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Message\obj\Debug\net8.0\refint\OrderService.Message.dll
+E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Message\obj\Debug\net8.0\OrderService.Message.pdb
+E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Message\obj\Debug\net8.0\ref\OrderService.Message.dll

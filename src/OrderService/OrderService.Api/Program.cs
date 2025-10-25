@@ -7,7 +7,6 @@ using Microsoft.IdentityModel.Tokens;
 using OrderService.Application.Interface;
 using OrderService.Application.MappingProfile;
 using OrderService.Application.Services;
-using OrderService.Application.Services.External;
 using OrderService.Application.Services.Payment;
 using OrderService.Domain.Entities;
 using OrderService.Infracstructure.DBContext;
@@ -101,12 +100,6 @@ builder.Services.AddAuthentication(options =>
 
 });
 
-// Cart client: base address = CartService hostname (render). Replace with actual url.
-builder.Services.AddHttpClient<ICartClient, CartClient>(client =>
-{
-    client.BaseAddress = new Uri("https://bookbridgecartservice.onrender.com"); // <<--- Render URL
-    client.Timeout = TimeSpan.FromSeconds(10);
-});
 
 // Payment service: mock for now
 builder.Services.AddScoped<IPaymentService, VNPayService>(); // Thay thế MockService
@@ -164,7 +157,16 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     }
 });
 
+
+// Đọc cấu hình từ appsettings.json
+var vnpayConfig = builder.Configuration.GetSection("VnPayConfig").Get<VnPayConfig>();
+builder.Services.AddSingleton(vnpayConfig); // Đăng ký Singleton
+builder.Services.AddScoped<IPaymentService, VNPayService>();
+
+
+
 var app = builder.Build();
+
 
 // Tự động áp dụng migrations VÀ XỬ LÝ LỖI
 using (var scope = app.Services.CreateScope())

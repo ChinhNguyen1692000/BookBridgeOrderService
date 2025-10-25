@@ -2,19 +2,30 @@
 using Microsoft.EntityFrameworkCore;
 using OrderService.Domain.Entities;
 using OrderService.Infracstructure.DBContext;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace OrderService.Infracstructure.Repositories
 {
     public class OrderRepository : BaseRepository<Order, Guid>
     {
-        public OrderRepository(OrderDbContext context) : base(context) { }
+        // Cần DbContext để quản lý Transaction cho OrderServices
+        private readonly OrderDbContext _context;
+
+        // Cập nhật Constructor để lưu _context
+        public OrderRepository(OrderDbContext context) : base(context) 
+        {
+            _context = context;
+        }
 
         // ======================= PRIVATE HELPERS ======================= //
 
-       
         private async Task<bool> UpdateOrderFieldAsync(int orderId, Action<Order> updateAction)
         {
-            var order = await _dbSet.FirstOrDefaultAsync(o => o.Id == orderId);
+            // Sử dụng FindAsync để tránh AsNoTracking nếu muốn update
+            var order = await _dbSet.FirstOrDefaultAsync(o => o.Id == orderId); 
             if (order == null) return false;
 
             updateAction(order);
@@ -26,13 +37,25 @@ namespace OrderService.Infracstructure.Repositories
 
         public async Task<List<Order>> GetOrderByBookstore(int storeId)
         {
-            return await _dbSet.Where(o => o.BookstoreId == storeId).ToListAsync();
+            // Thêm Include(OrderItems) cho đủ thông tin
+            return await _dbSet
+                .Include(o => o.OrderItems)
+                .Where(o => o.BookstoreId == storeId)
+                .AsNoTracking()
+                .ToListAsync();
         }
-        public async Task<List<Order>> GetOrderByCustomerAndStatus(string userId, int orderStatus)
+
+        // Đổi kiểu dữ liệu của userId sang Guid
+        public async Task<List<Order>> GetOrderByCustomerAndStatus(Guid userId, int orderStatus)
         {
             var status = (OrderStatus)orderStatus;
-            return await _dbSet.Include(o => o.OrderItems).Where(o => o.CustomerId.Equals(userId) && o.OrderStatus==status).ToListAsync();
+            return await _dbSet
+                .Include(o => o.OrderItems)
+                .Where(o => o.CustomerId.Equals(userId) && o.OrderStatus == status)
+                .AsNoTracking() // Thêm AsNoTracking
+                .ToListAsync();
         }
+
         public async Task<List<Order>> GetOrdersByCustomerAsync(Guid customerId)
         {
             return await _dbSet
@@ -42,7 +65,7 @@ namespace OrderService.Infracstructure.Repositories
                 .ToListAsync();
         }
 
-
+        // Chỉnh sửa để trả về Order? và thêm Include/AsNoTracking
         public async Task<Order?> GetByIdAsync(int id)
         {
             return await _dbSet
@@ -58,37 +81,25 @@ namespace OrderService.Infracstructure.Repositories
                 .AsNoTracking()
                 .ToListAsync();
         }
-        
 
         // ======================= CREATE / UPDATE ======================= //
-        public async Task<bool> CreateOrderAsync(Order order)
+
+        // Sử dụng phương thức Add của BaseRepository (hoặc có thể tạo lại với logic đặc biệt nếu cần)
+        public async Task<Order> CreateAsync(Order order)
         {
-            if (order == null) return false;
-            try
-            {
-                await _dbSet.AddAsync(order); // <-- dùng _dbSet, không _context.Orders
-                Console.WriteLine($"DB Provider: {_context.Database.ProviderName}");
-                Console.WriteLine($"DB Conn: {_context.Database.GetConnectionString()}");
-                await _context.SaveChangesAsync();
-                Console.WriteLine($"✅ Order {order.OrderNumber} saved successfully.");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Save failed: {ex}");
-                return false;
-            }
+            if (order == null) throw new ArgumentNullException(nameof(order));
+            await _dbSet.AddAsync(order);
+            await _context.SaveChangesAsync(); // Lưu thay đổi để có Order.Id
+            return order;
         }
 
-
-
-        public async Task<bool> UpdateOrderAsync(Order order)
+        // Thêm UpdateAsync để OrderServices có thể sử dụng (đã có trong BaseRepository, nhưng cần triển khai cụ thể nếu không dùng BaseRepository.Update)
+        public async Task<Order> UpdateAsync(Order order)
         {
-            if (order == null) return false;
-
+            if (order == null) throw new ArgumentNullException(nameof(order));
             _dbSet.Update(order);
             await _context.SaveChangesAsync();
-            return true;
+            return order;
         }
 
         // ======================= UPDATE FIELDS ======================= //

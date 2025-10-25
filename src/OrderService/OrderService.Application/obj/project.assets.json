@@ -3392,43 +3392,35 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\PC\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\Chinh\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\LapTrinh\\PRM_BOOK\\bookbridge-order\\BookBridgeOrderService\\src\\OrderService\\OrderService.Application\\OrderService.Application.csproj",
+      "projectUniqueName": "E:\\My githhub repo(UserSerivce)\\BookBridgeOrderService\\src\\OrderService\\OrderService.Application\\OrderService.Application.csproj",
       "projectName": "OrderService.Application",
-      "projectPath": "D:\\LapTrinh\\PRM_BOOK\\bookbridge-order\\BookBridgeOrderService\\src\\OrderService\\OrderService.Application\\OrderService.Application.csproj",
-      "packagesPath": "C:\\Users\\PC\\.nuget\\packages\\",
-      "outputPath": "D:\\LapTrinh\\PRM_BOOK\\bookbridge-order\\BookBridgeOrderService\\src\\OrderService\\OrderService.Application\\obj\\",
+      "projectPath": "E:\\My githhub repo(UserSerivce)\\BookBridgeOrderService\\src\\OrderService\\OrderService.Application\\OrderService.Application.csproj",
+      "packagesPath": "C:\\Users\\Chinh\\.nuget\\packages\\",
+      "outputPath": "E:\\My githhub repo(UserSerivce)\\BookBridgeOrderService\\src\\OrderService\\OrderService.Application\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\PC\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "C:\\Users\\Chinh\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "D:\\LapTrinh\\PRM_BOOK\\bookbridge-order\\BookBridgeOrderService\\src\\Common\\Common.csproj": {
-              "projectPath": "D:\\LapTrinh\\PRM_BOOK\\bookbridge-order\\BookBridgeOrderService\\src\\Common\\Common.csproj"
+            "E:\\My githhub repo(UserSerivce)\\BookBridgeOrderService\\src\\Common\\Common.csproj": {
+              "projectPath": "E:\\My githhub repo(UserSerivce)\\BookBridgeOrderService\\src\\Common\\Common.csproj"
             },
-            "D:\\LapTrinh\\PRM_BOOK\\bookbridge-order\\BookBridgeOrderService\\src\\OrderService\\OrderService.Infrastructure\\OrderService.Infrastructure.csproj": {
-              "projectPath": "D:\\LapTrinh\\PRM_BOOK\\bookbridge-order\\BookBridgeOrderService\\src\\OrderService\\OrderService.Infrastructure\\OrderService.Infrastructure.csproj"
+            "E:\\My githhub repo(UserSerivce)\\BookBridgeOrderService\\src\\OrderService\\OrderService.Infrastructure\\OrderService.Infrastructure.csproj": {
+              "projectPath": "E:\\My githhub repo(UserSerivce)\\BookBridgeOrderService\\src\\OrderService\\OrderService.Infrastructure\\OrderService.Infrastructure.csproj"
             }
           }
         }
@@ -3469,7 +3461,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.401/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.410/PortableRuntimeIdentifierGraph.json"
       }
     }
   },

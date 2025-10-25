@@ -4,11 +4,10 @@ using OrderService.Application.Interface;
 using OrderService.Application.Models;
 using OrderService.Domain.Entities;
 using OrderService.Infracstructure.DBContext;
-using System; // Cần thiết cho Exception và DateTime
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Threading.Tasks; // Cần thiết cho async/await
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using OrderService.Infracstructure.Repositories;
 
@@ -17,23 +16,26 @@ namespace OrderService.Application.Services
     public class OrderServices : IOrderServices
     {
         private readonly IMapper _mapper;
-        private readonly ICartClient _cartClient;
         private readonly IPaymentService _paymentService;
         private readonly OrderRepository _repo;
+        private readonly PaymentTransactionRepository _paymentTxRepo;
+        private readonly OrderDbContext _orderDbContext;
 
         public OrderServices(
             IMapper mapper,
-            ICartClient cartClient,
             IPaymentService paymentService,
-            OrderRepository repo)
+            OrderRepository repo,
+            PaymentTransactionRepository paymentTxRepo,
+            OrderDbContext orderDbContext)
         {
             _mapper = mapper;
-            _cartClient = cartClient;
             _paymentService = paymentService;
             _repo = repo;
+            _paymentTxRepo = paymentTxRepo;
+            _orderDbContext = orderDbContext;
         }
 
-        // --- Các phương thức CRUD/Query sử dụng int Id ---
+        // --- Các phương thức CRUD/Query sử dụng int Id (Giữ nguyên) ---
 
         public async Task<PagedResult<Order>> GetAll(int pageNo, int pageSize)
         {
@@ -55,21 +57,24 @@ namespace OrderService.Application.Services
             return oLPaging;
         }
 
-        // Phương thức mới: Lấy order theo OrderStatus
         public async Task<PagedResult<Order>> GetOrderByCustomerAndStatus(OrderFilterByCustomerAndStatusRequest request, int pageNo, int pageSize)
         {
-            var oL = await _repo.GetOrderByCustomerAndStatus(request.CustomerId, request.OrderStatus);
+            if (!Guid.TryParse(request.CustomerId.ToString(), out Guid customerGuid))
+            {
+                throw new ArgumentException("CustomerId không hợp lệ.");
+            }
+            var oL = await _repo.GetOrderByCustomerAndStatus(customerGuid, request.OrderStatus);
             var oLPaging = PagedResult<Order>.Create(oL, pageNo, pageSize);
             return oLPaging;
         }
 
-        // Phương thức mới: Lấy order theo BookstoreId  
         public async Task<PagedResult<Order>> GetOrderByBookstore(int bookstoreId, int pageNo, int pageSize)
         {
             var oL = await _repo.GetOrderByBookstore(bookstoreId);
             var oLPaging = PagedResult<Order>.Create(oL, pageNo, pageSize);
             return oLPaging;
         }
+
         public async Task<Order> Update(int id, OrderUpdateRequest request)
         {
             var exist = await _repo.GetByIdAsync(id);
@@ -87,303 +92,242 @@ namespace OrderService.Application.Services
             return exist;
         }
 
-        //public async Task<Order> Create(OrderCreateRequest request)
-        //{
-        //    // Bắt buộc COD (theo yêu cầu hiện tại)
-        //    if (request.PaymentMethod != PaymentMethod.COD)
-        //        throw new InvalidOperationException("Service hiện tại chỉ hỗ trợ tạo đơn COD.");
+        // --- PHƯƠNG THỨC XỬ LÝ THANH TOÁN ONLINE (VNPAY) ---
+        public async Task<PaymentTransaction> CreateAndInitiatePayment(
+            Guid customerId,
+            OrderCreateRequest checkoutRequest,
+            string customerIpAddress)
+        {
+            if (checkoutRequest.Stores == null || !checkoutRequest.Stores.Any() || checkoutRequest.Stores.All(s => !s.OrderItems.Any()))
+                throw new ArgumentException("Yêu cầu thanh toán không chứa mặt hàng nào hoặc cửa hàng hợp lệ.");
+            
+            // 💡 CHỈ XỬ LÝ LUỒNG ONLINE (VNPAY)
+            if (checkoutRequest.PaymentMethod == PaymentMethod.COD)
+                throw new InvalidOperationException("Phương thức COD không được gọi qua API này.");
 
-        //    if (request.Stores == null || request.Stores.Count != 1)
-        //        throw new ValidationException("Phương thức Create chỉ hỗ trợ tạo đơn hàng đơn lẻ, vui lòng đảm bảo Request chỉ chứa 1 Store.");
+            // 1. Gán PaymentProvider (tất cả các hình thức online đều dùng VNPAY)
+            var paymentProvider = PaymentProvider.VNPay;
+            // Nếu bạn muốn mở rộng sau này, có thể dùng logic:
+            // if (checkoutRequest.PaymentMethod == PaymentMethod.EWallet) paymentProvider = PaymentProvider.MoMo;
 
-        //    var storeRequest = request.Stores.First();
+            // 2. Tạo các Order (từ mỗi cửa hàng)
+            var createdOrders = new List<Order>();
 
-        //    var order = new Order
-        //    {
-        //        CustomerId = request.CustomerId,
-        //        BookstoreId = storeRequest.BookstoreId,
-        //        CustomerPhoneNumber = request.CustomerPhoneNumber,
-        //        DeliveryAddress = request.DeliveryAddress,
-        //        OrderDate = DateTime.UtcNow,
-        //        OrderNumber = $"ORD-{DateTime.UtcNow:yyyyMMddHHmmssfff}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpper()}", // Sử dụng GUID/Thời gian
-        //        OrderStatus = OrderStatus.Confirmed, // COD mặc định xác nhận khi tạo (tuỳ nghiệp vụ, ở đây đánh dấu Confirmed)
-        //        PaymentMethod = PaymentMethod.COD,
-        //        PaymentProvider = null,
-        //        PaymentStatus = PaymentStatus.Paid // COD tính là đã thanh toán ở đây theo yêu cầu "lưu order cho COD"
-        //    };
+            foreach (var store in checkoutRequest.Stores)
+            {
+                if (!store.OrderItems.Any()) continue;
 
-        //    order.OrderItems = storeRequest.OrderItems.Select(i => new OrderItem
-        //    {
-        //        Id = Guid.NewGuid(),
-        //        BookId = i.BookId,
-        //        Quantity = i.Quantity,
-        //        UnitPrice = i.UnitPrice,
-        //        TotalPrice = i.Quantity * i.UnitPrice
-        //    }).ToList();
+                var order = new Order
+                {
+                    CustomerId = customerId,
+                    BookstoreId = store.BookstoreId,
+                    CustomerPhoneNumber = checkoutRequest.CustomerPhoneNumber,
+                    DeliveryAddress = checkoutRequest.DeliveryAddress,
+                    PaymentMethod = checkoutRequest.PaymentMethod,
+                    // 💡 SỬA LỖI GÁN PaymentProvider (Sử dụng enum đã định nghĩa)
+                    PaymentProvider = paymentProvider, 
+                    OrderDate = DateTime.UtcNow,
+                    OrderNumber = $"ORD-{DateTime.UtcNow:yyyyMMddHHmmssfff}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpper()}",
+                    OrderStatus = OrderStatus.Created, // Đã tạo, chờ thanh toán
+                    PaymentStatus = PaymentStatus.Pending
+                };
 
-        //    order.TotalQuantity = order.OrderItems.Sum(x => x.Quantity);
-        //    order.TotalPrice = order.OrderItems.Sum(x => x.TotalPrice);
+                order.OrderItems = store.OrderItems.Select(i => new OrderItem
+                {
+                    Id = Guid.NewGuid(),
+                    BookId = i.BookId,
+                    Quantity = i.Quantity,
+                    UnitPrice = i.UnitPrice,
+                    TotalPrice = i.UnitPrice * i.Quantity
+                }).ToList();
 
-        //    // Tạo PaymentTransaction cho COD
-        //    var paymentTx = new PaymentTransaction
-        //    {
-        //        Id = Guid.NewGuid(),
-        //        TotalAmount = order.TotalPrice,
-        //        PaymentStatus = PaymentStatus.Paid,
-        //        PaymentUrl = "COD_SUCCESS",
-        //        TransactionId = $"COD_TX_{Guid.NewGuid():N}",
-        //        PaidDate = DateTime.UtcNow
-        //    };
+                order.TotalQuantity = order.OrderItems.Sum(x => x.Quantity);
+                order.TotalPrice = order.OrderItems.Sum(x => x.TotalPrice);
 
-        //    // Liên kết
-        //    order.PaymentTransactionId = paymentTx.Id;
+                createdOrders.Add(order);
+            }
 
-        //    // Sử dụng transaction để đảm bảo atomicity
-        //    using var transaction = await _orderDbContext.Database.BeginTransactionAsync();
-        //    try
-        //    {
-        //        _orderDbContext.PaymentTransactions.Add(paymentTx);
-        //        _orderDbContext.Orders.Add(order);
+            if (!createdOrders.Any())
+                throw new ArgumentException("Không có đơn hàng nào được tạo.");
 
-        //        // Lưu lần 1 để DB gán Order.Id (tự tăng) — cần để tạo OrderNumber có Id
-        //        var rows = await _orderDbContext.SaveChangesAsync();
-        //        if (rows == 0) throw new Exception("Không thể lưu order vào DB.");
+            // 3. Tạo PaymentTransaction gộp cho tất cả orders
+            var totalAmount = createdOrders.Sum(o => o.TotalPrice);
+            var paymentTx = new PaymentTransaction
+            {
+                Id = Guid.NewGuid(),
+                TotalAmount = totalAmount,
+                PaymentStatus = PaymentStatus.Pending,
+                PaymentUrl = null,
+                TransactionId = Guid.NewGuid().ToString("N"),
+                PaidDate = null
+            };
 
-        //        // Gán OrderNumber (có thể dùng millisecond để tránh trùng)
-        //        order.OrderNumber = $"ORD-{DateTime.UtcNow:yyyyMMddHHmmssfff}-{order.Id}";
+            foreach (var order in createdOrders)
+            {
+                order.PaymentTransactionId = paymentTx.Id;
+            }
 
-        //        // Lưu lần 2 để cập nhật OrderNumber
-        //        await _orderDbContext.SaveChangesAsync();
+            // 4. Khởi tạo thanh toán với Provider (VNPAY)
+            var paymentResult = await _paymentService.InitiatePaymentAsync(paymentTx, customerIpAddress);
 
-        //        await transaction.CommitAsync();
+            if (!paymentResult.Success)
+            {
+                throw new InvalidOperationException($"Không thể khởi tạo thanh toán với nhà cung cấp: {paymentResult.Message}");
+            }
 
-        //        return order;
-        //    }
-        //    catch
-        //    {
-        //        await transaction.RollbackAsync();
-        //        throw;
-        //    }
-        //}
+            // 5. Cập nhật PaymentTransaction với thông tin từ Provider
+            paymentTx.PaymentUrl = paymentResult.PaymentUrl;
+            paymentTx.TransactionId = paymentResult.TransactionId;
 
-        //public async Task<PaymentTransaction> CreateFromCart(
-        //    Guid customerId,
-        //    OrderCreateRequest checkoutRequest,
-        //    string accessToken)
-        //{
-        //    // Giờ chỉ xử lý COD
-        //    if (checkoutRequest.PaymentMethod != PaymentMethod.COD)
-        //        throw new InvalidOperationException("Service hiện tại chỉ hỗ trợ tạo đơn COD từ giỏ hàng.");
+            // 6. Lưu tất cả Orders và PaymentTransaction trong 1 Transaction DB
+            var (savedTx, savedOrders) = await _paymentTxRepo.SavePaymentTransactionAndOrdersInTransactionAsync(
+                paymentTx,
+                createdOrders,
+                (tx, orders) =>
+                {
+                    // Cập nhật OrderNumber bằng ID sau khi lưu DB
+                    foreach (var order in orders)
+                    {
+                        order.OrderNumber = $"ORD-{DateTime.UtcNow:yyyyMMddHHmmssfff}-{order.Id}";
+                    }
+                    return Task.CompletedTask;
+                }
+            );
 
-        //    if (checkoutRequest.Stores == null || !checkoutRequest.Stores.Any() || checkoutRequest.Stores.All(s => !s.OrderItems.Any()))
-        //        throw new ArgumentException("Yêu cầu thanh toán không chứa mặt hàng nào hoặc cửa hàng hợp lệ.");
+            if (savedTx == null) throw new Exception("Tạo giao dịch thanh toán thất bại.");
 
-        //    using var transaction = await _orderDbContext.Database.BeginTransactionAsync();
-        //    try
-        //    {
-        //        var createdOrders = new List<Order>();
+            return savedTx;
+        }
 
-        //        foreach (var store in checkoutRequest.Stores)
-        //        {
-        //            if (!store.OrderItems.Any()) continue;
+        // --- PHƯƠNG THỨC XỬ LÝ THANH TOÁN COD ---
+        public async Task<PaymentTransaction> CreateFromCart(
+            Guid customerId,
+            OrderCreateRequest checkoutRequest,
+            string accessToken)
+        {
+            // 💡 CHỈ XỬ LÝ LUỒNG COD
+            if (checkoutRequest.PaymentMethod != PaymentMethod.COD)
+                throw new InvalidOperationException("Service này chỉ hỗ trợ tạo đơn COD từ giỏ hàng.");
 
-        //            var order = new Order
-        //            {
-        //                CustomerId = customerId,
-        //                BookstoreId = store.BookstoreId,
-        //                CustomerPhoneNumber = checkoutRequest.CustomerPhoneNumber,
-        //                DeliveryAddress = checkoutRequest.DeliveryAddress,
-        //                PaymentMethod = PaymentMethod.COD,
-        //                PaymentProvider = null,
-        //                OrderDate = DateTime.UtcNow,
-        //                OrderNumber = $"ORD-{DateTime.UtcNow:yyyyMMddHHmmssfff}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpper()}", // Giá trị duy nhất
-        //                OrderStatus = OrderStatus.Confirmed,
-        //                PaymentStatus = PaymentStatus.Paid
-        //            };
+            if (checkoutRequest.Stores == null || !checkoutRequest.Stores.Any() || checkoutRequest.Stores.All(s => !s.OrderItems.Any()))
+                throw new ArgumentException("Yêu cầu thanh toán không chứa mặt hàng nào hoặc cửa hàng hợp lệ.");
 
-        //            order.OrderItems = store.OrderItems.Select(i => new OrderItem
-        //            {
-        //                Id = Guid.NewGuid(),
-        //                BookId = i.BookId,
-        //                Quantity = i.Quantity,
-        //                UnitPrice = i.UnitPrice,
-        //                TotalPrice = i.UnitPrice * i.Quantity
-        //            }).ToList();
+            var createdOrders = new List<Order>();
 
-        //            order.TotalQuantity = order.OrderItems.Sum(x => x.Quantity);
-        //            order.TotalPrice = order.OrderItems.Sum(x => x.TotalPrice);
+            foreach (var store in checkoutRequest.Stores)
+            {
+                if (!store.OrderItems.Any()) continue;
 
-        //            createdOrders.Add(order);
-        //            _orderDbContext.Orders.Add(order);
-        //        }
+                var order = new Order
+                {
+                    CustomerId = customerId,
+                    BookstoreId = store.BookstoreId,
+                    CustomerPhoneNumber = checkoutRequest.CustomerPhoneNumber,
+                    DeliveryAddress = checkoutRequest.DeliveryAddress,
+                    PaymentMethod = PaymentMethod.COD,
+                    PaymentProvider = PaymentProvider.None, // COD không cần Payment Provider
+                    OrderDate = DateTime.UtcNow,
+                    OrderNumber = $"ORD-{DateTime.UtcNow:yyyyMMddHHmmssfff}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpper()}",
+                    OrderStatus = OrderStatus.Confirmed, // COD: Đơn hàng được xác nhận ngay
+                    PaymentStatus = PaymentStatus.Paid // COD: Được xem là đã thanh toán (khi nhận hàng)
+                };
 
-        //        if (!createdOrders.Any())
-        //            throw new ArgumentException("Không có đơn hàng nào được tạo.");
+                order.OrderItems = store.OrderItems.Select(i => new OrderItem
+                {
+                    Id = Guid.NewGuid(),
+                    BookId = i.BookId,
+                    Quantity = i.Quantity,
+                    UnitPrice = i.UnitPrice,
+                    TotalPrice = i.UnitPrice * i.Quantity
+                }).ToList();
 
-        //        // Tạo PaymentTransaction gộp cho tất cả orders (COD)
-        //        var totalAmount = createdOrders.Sum(o => o.TotalPrice);
-        //        var paymentTx = new PaymentTransaction
-        //        {
-        //            Id = Guid.NewGuid(),
-        //            TotalAmount = totalAmount,
-        //            PaymentStatus = PaymentStatus.Paid,
-        //            PaymentUrl = "COD_SUCCESS",
-        //            TransactionId = $"COD_TX_{Guid.NewGuid():N}",
-        //            PaidDate = DateTime.UtcNow
-        //        };
+                order.TotalQuantity = order.OrderItems.Sum(x => x.Quantity);
+                order.TotalPrice = order.OrderItems.Sum(x => x.TotalPrice);
 
-        //        // Liên kết tất cả orders tới PaymentTransaction này
-        //        foreach (var order in createdOrders)
-        //        {
-        //            order.PaymentTransactionId = paymentTx.Id;
-        //        }
+                createdOrders.Add(order);
+            }
 
-        //        _orderDbContext.PaymentTransactions.Add(paymentTx);
+            if (!createdOrders.Any())
+                throw new ArgumentException("Không có đơn hàng nào được tạo.");
 
-        //        // Lưu để DB gán Id cho orders (lần 1)
-        //        var rows = await _orderDbContext.SaveChangesAsync();
-        //        if (rows == 0) throw new Exception("Lưu đơn hàng thất bại.");
+            // Tạo PaymentTransaction gộp cho tất cả orders (COD)
+            var totalAmount = createdOrders.Sum(o => o.TotalPrice);
+            var paymentTx = new PaymentTransaction
+            {
+                Id = Guid.NewGuid(),
+                TotalAmount = totalAmount,
+                PaymentStatus = PaymentStatus.Paid,
+                PaymentUrl = "COD_SUCCESS",
+                TransactionId = $"COD_TX_{Guid.NewGuid():N}",
+                PaidDate = DateTime.UtcNow
+            };
 
-        //        // Cập nhật OrderNumber cho từng order (cần order.Id)
-        //        foreach (var order in createdOrders)
-        //        {
-        //            order.OrderNumber = $"ORD-{DateTime.UtcNow:yyyyMMddHHmmssfff}-{order.Id}";
-        //        }
+            foreach (var order in createdOrders)
+            {
+                order.PaymentTransactionId = paymentTx.Id;
+            }
 
-        //        await _orderDbContext.SaveChangesAsync();
+            var (savedTx, savedOrders) = await _paymentTxRepo.SavePaymentTransactionAndOrdersInTransactionAsync(
+                paymentTx,
+                createdOrders,
+                (tx, orders) =>
+                {
+                    foreach (var order in orders)
+                    {
+                        order.OrderNumber = $"ORD-{DateTime.UtcNow:yyyyMMddHHmmssfff}-{order.Id}";
+                    }
+                    return Task.CompletedTask;
+                }
+            );
 
-        //        // Xóa giỏ hàng (nếu có lỗi thì chỉ log, không throw để rollback giao dịch thanh toán)
-        //        try
-        //        {
-        //            await _cartClient.ClearCartAsync(customerId.ToString(), accessToken);
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            // Không chặn luồng chính, log hoặc console
-        //            Console.WriteLine($"Warning: Failed to clear cart for customer {customerId}: {ex.Message}");
-        //        }
+            if (savedTx == null) throw new Exception("Tạo giao dịch thanh toán thất bại.");
+            
+            return savedTx;
+        }
 
-        //        await transaction.CommitAsync();
+        // --- PHƯƠNG THỨC XỬ LÝ CALLBACK (IPN) (Giữ nguyên) ---
+        public async Task<bool> HandlePaymentCallback(string transactionId, IDictionary<string, string> payload)
+        {
+            if (string.IsNullOrWhiteSpace(transactionId)) return false;
 
-        //        return paymentTx;
-        //    }
-        //    catch
-        //    {
-        //        await transaction.RollbackAsync();
-        //        throw;
-        //    }
-        //}
+            var paymentTx = await _paymentTxRepo.GetByTransactionIdWithOrdersAsync(transactionId);
 
+            if (paymentTx == null) return false;
 
-        //public async Task<PaymentTransaction> InitiatePayment(int orderId)
-        //{
-        //    // Không hỗ trợ khởi tạo thanh toán online trong bản hiện tại
-        //    throw new NotSupportedException("Service hiện chỉ hỗ trợ COD; InitiatePayment (online) không được hỗ trợ.");
-        //}
+            if (paymentTx.PaymentStatus != PaymentStatus.Pending) return true;
 
-        //public async Task<bool> HandlePaymentCallback(string transactionId, IDictionary<string, string> payload)
-        //{
-        //    // Với bản chỉ COD, callback từ payment gateway không khả dụng.
-        //    // Tuy nhiên giữ logic idempotent để nếu có transaction bị cập nhật vẫn an toàn.
-        //    if (string.IsNullOrWhiteSpace(transactionId)) return false;
+            var result = await _paymentService.HandleCallbackAsync(transactionId, payload);
 
-        //    var paymentTx = await _orderDbContext.PaymentTransactions
-        //        .Include(pt => pt.Orders)
-        //        .FirstOrDefaultAsync(pt => pt.TransactionId == transactionId);
+            if (result.Success)
+            {
+                paymentTx.PaymentStatus = PaymentStatus.Paid;
+                paymentTx.PaidDate = DateTime.UtcNow;
 
-        //    if (paymentTx == null) return false;
+                foreach (var order in paymentTx.Orders)
+                {
+                    order.PaymentStatus = PaymentStatus.Paid;
+                    order.OrderStatus = OrderStatus.Confirmed;
+                    _orderDbContext.Entry(order).State = EntityState.Modified;
+                }
+            }
+            else
+            {
+                paymentTx.PaymentStatus = PaymentStatus.Failed;
+                
+                foreach (var order in paymentTx.Orders)
+                {
+                    order.PaymentStatus = PaymentStatus.Failed;
+                    order.OrderStatus = OrderStatus.Canceled;
+                    _orderDbContext.Entry(order).State = EntityState.Modified;
+                }
+            }
 
-        //    // Idempotency: nếu đã Paid thì trả true ngay
-        //    if (paymentTx.PaymentStatus == PaymentStatus.Paid) return true;
+            _orderDbContext.Entry(paymentTx).State = EntityState.Modified;
 
-        //    // Nếu bản này chỉ COD, hầu như sẽ không có callback, nhưng nếu provider gửi Paid thì cập nhật:
-        //    // Delegate xử lý logic xác thực payload cho _paymentService nếu cần (chỉ khi bạn tích hợp online)
-        //    var result = await _paymentService.HandleCallbackAsync(transactionId, payload);
+            await _orderDbContext.SaveChangesAsync();
 
-        //    if (result.Success)
-        //    {
-        //        paymentTx.PaymentStatus = PaymentStatus.Paid;
-        //        paymentTx.PaidDate = DateTime.UtcNow;
-
-        //        foreach (var order in paymentTx.Orders)
-        //        {
-        //            order.PaymentStatus = PaymentStatus.Paid;
-        //            order.OrderStatus = OrderStatus.Confirmed;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        paymentTx.PaymentStatus = PaymentStatus.Failed;
-        //        foreach (var order in paymentTx.Orders)
-        //        {
-        //            order.PaymentStatus = PaymentStatus.Failed;
-        //            order.OrderStatus = OrderStatus.Canceled;
-        //        }
-        //    }
-
-        //    await _orderDbContext.SaveChangesAsync();
-
-        //    return true;
-        //}
-
-        //public async Task<bool> UpdatePaymentStatusAfterScan(int orderId)
-        //{
-        //    var order = await _orderDbContext.Orders
-        //        .AsNoTracking()
-        //        .FirstOrDefaultAsync(o => o.Id == orderId);
-
-        //    if (order == null) return false;
-
-        //    if (order.PaymentStatus == PaymentStatus.Paid) return true;
-
-        //    if (order.PaymentTransactionId == null)
-        //    {
-        //        throw new InvalidOperationException($"Order {orderId} không có TransactionId. Có thể là COD (nhưng nếu là COD thì PaymentStatus nên là Paid).");
-        //    }
-
-        //    var paymentTx = await _orderDbContext.PaymentTransactions
-        //        .Include(pt => pt.Orders)
-        //        .FirstOrDefaultAsync(pt => pt.Id == order.PaymentTransactionId.Value);
-
-        //    if (paymentTx == null) return false;
-
-        //    if (paymentTx.PaymentStatus == PaymentStatus.Paid)
-        //    {
-        //        foreach (var relatedOrder in paymentTx.Orders)
-        //        {
-        //            if (relatedOrder.PaymentStatus != PaymentStatus.Paid)
-        //            {
-        //                relatedOrder.PaymentStatus = PaymentStatus.Paid;
-        //                relatedOrder.OrderStatus = OrderStatus.Confirmed;
-        //            }
-        //        }
-
-        //        await _orderDbContext.SaveChangesAsync();
-        //        return true;
-        //    }
-
-        //    // Với chế độ chỉ COD, thường đây luôn là Paid. Tuy nhiên giữ check với payment service nếu cần.
-        //    if (!string.IsNullOrWhiteSpace(paymentTx.TransactionId))
-        //    {
-        //        var isPaid = await _paymentService.CheckTransactionStatusAsync(paymentTx.TransactionId);
-
-        //        if (isPaid)
-        //        {
-        //            paymentTx.PaymentStatus = PaymentStatus.Paid;
-
-        //            foreach (var relatedOrder in paymentTx.Orders)
-        //            {
-        //                relatedOrder.PaymentStatus = PaymentStatus.Paid;
-        //                relatedOrder.OrderStatus = OrderStatus.Confirmed;
-        //            }
-
-        //            await _orderDbContext.SaveChangesAsync();
-        //            return true;
-        //        }
-        //    }
-
-        //    return false;
-        //}
+            return result.Success;
+        }
 
         public async Task<IEnumerable<Order>> SearchByCustomerEmail(string email)
         {

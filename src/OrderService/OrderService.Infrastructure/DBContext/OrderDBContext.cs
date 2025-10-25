@@ -12,7 +12,6 @@ namespace OrderService.Infracstructure.DBContext
 
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
-        public DbSet<Message> Messages { get; set; }
 
         public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
 
@@ -51,13 +50,6 @@ namespace OrderService.Infracstructure.DBContext
             {
                 entity.Property(pt => pt.TotalAmount).HasColumnType("decimal(18,2)");
                 entity.HasIndex(pt => pt.TransactionId).IsUnique();
-            });
-
-            modelBuilder.Entity<Message>(entity =>
-            {
-                entity.Property(m => m.Payload).HasColumnType("text");
-                entity.HasIndex(m => m.MessageStatus);
-                entity.HasIndex(m => m.EventType);
             });
 
             // delete

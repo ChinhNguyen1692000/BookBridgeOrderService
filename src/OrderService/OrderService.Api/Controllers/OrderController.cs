@@ -13,20 +13,32 @@ namespace OrderService.Api.Controllers
     public class OrderController : BaseApiController
     {
         private readonly IOrderServices _service;
+        private readonly IPaymentService _paymentService;
 
-        public OrderController(IOrderServices service)
+        public OrderController(IOrderServices service, IPaymentService paymentService)
         {
             _service = service;
+            _paymentService = paymentService;
         }
 
         // ==========================
-        // 🔹 Helper methods (Giữ nguyên)
+        // Helper methods
         // ==========================
         private Guid GetCustomerId()
         {
             var id = User.FindFirstValue(ClaimTypes.NameIdentifier)
-                 ?? User.FindFirstValue("nameid");
+                   ?? User.FindFirstValue("nameid");
             return Guid.TryParse(id, out var guid) ? guid : Guid.Empty;
+        }
+
+        private string GetCustomerIpAddress()
+        {
+            // Lấy IP từ Header hoặc Connection, tùy thuộc vào môi trường Deployment (Proxy/Load Balancer)
+            if (Request.Headers.ContainsKey("X-Forwarded-For"))
+            {
+                return Request.Headers["X-Forwarded-For"].ToString().Split(',').FirstOrDefault()?.Trim() ?? "127.0.0.1";
+            }
+            return HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
         }
 
         private string GetCustomerEmail() =>
@@ -34,9 +46,11 @@ namespace OrderService.Api.Controllers
             ?? User.FindFirstValue("email")
             ?? string.Empty;
 
-        /// <summary>
-        /// Lấy tất cả Order
-        /// </summary>
+        // ==========================
+        // QUERIES/GET
+        // ==========================
+
+        // Lấy tất cả Order
         [HttpGet("list")]
         public async Task<IActionResult> GetAll(int page = 1, int pageSize = 10)
         {
@@ -44,9 +58,7 @@ namespace OrderService.Api.Controllers
             return Ok(result);
         }
 
-        /// <summary>
-        /// Lấy Order theo id
-        /// </summary>
+        // Lấy Order theo id
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -54,9 +66,8 @@ namespace OrderService.Api.Controllers
             return order is null ? NotFound() : Ok(order);
         }
 
-        /// <summary>
-        /// Lấy Order theo Customer
-        /// </summary>
+
+        // Lấy Order theo Customer
         [HttpGet("by-customer/{customerId:guid}")]
         public async Task<IActionResult> GetByCustomer(Guid customerId, int page = 1, int pageSize = 10)
         {
@@ -64,9 +75,8 @@ namespace OrderService.Api.Controllers
             return Ok(result);
         }
 
-        /// <summary>
-        /// Lấy Order theo customer và status
-        /// </summary>
+
+        // Lấy Order theo customer và status
         [HttpGet("by-status")]
         public async Task<IActionResult> GetByCustomerAndStatus([FromQuery] OrderFilterByCustomerAndStatusRequest request, int page = 1, int pageSize = 10)
         {
@@ -79,10 +89,8 @@ namespace OrderService.Api.Controllers
             return Ok(result);
         }
 
-        /// <summary>
-        /// Lấy Order theo store
-        /// </summary>
-        [HttpGet("by-bookstore/{bookstoreId:guid}")]
+        // Lấy Order theo store
+        [HttpGet("by-bookstore/{bookstoreId:int}")]
         [Authorize(Roles = "Admin,Seller")] // Admin/Seller mới có quyền truy vấn theo BookstoreId
         public async Task<IActionResult> GetByBookstore(int bookstoreId, int page = 1, int pageSize = 10)
         {
@@ -90,144 +98,174 @@ namespace OrderService.Api.Controllers
             return Ok(result);
         }
 
-        //[HttpPost("create")]
-        //public async Task<IActionResult> Create([FromBody] OrderCreateRequest request)
-        //{
-        //    var order = await _service.Create(request);
-        //    return Ok(order);
-        //}
+        // ==========================
+        // THANH TOÁN ONLINE (VNPAY, MoMo...)
+        // ==========================
+        /// Tạo đơn hàng và khởi tạo giao dịch thanh toán Online (redirect URL).
+        [HttpPost("checkout-online")]
+        public async Task<IActionResult> CheckoutOnline([FromBody] OrderCreateRequest request)
+        {
+            var customerId = GetCustomerId();
+            var customerIpAddress = GetCustomerIpAddress();
 
-        //// Tạo đơn hàng qua giỏ hàng (checkout flow)
-        //[HttpPost("checkout/create")]
-        //public async Task<IActionResult> CreateFromCart([FromBody] OrderCreateRequest request)
-        //{
-        //    var customerId = GetCustomerId();
-        //    var customerEmail = GetCustomerEmail();
-        //    var accessToken = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            if (customerId == Guid.Empty)
+                return Unauthorized("Không tìm thấy thông tin khách hàng (Customer ID) trong token.");
 
-        //    if (customerId == Guid.Empty || string.IsNullOrEmpty(customerEmail))
-        //        return Unauthorized("Không tìm thấy thông tin định danh (ID/Email) của khách hàng trong token.");
+            // CHỈ CHO PHÉP thanh toán Online
+            if (request.PaymentMethod == PaymentMethod.COD)
+                return BadRequest(new { message = "Phương thức thanh toán COD phải được gọi qua API 'checkout-cod'." });
 
-        //    if (string.IsNullOrEmpty(accessToken))
-        //        return Unauthorized("Không tìm thấy Access Token.");
+            try
+            {
+                var paymentTx = await _service.CreateAndInitiatePayment(customerId, request, customerIpAddress);
 
-        //    try
-        //    {
-        //        request.CustomerId = customerId;
-        //        request.CustomerEmail = customerEmail;
+                // Phản hồi: Trả về URL thanh toán cho Frontend
+                return Ok(new
+                {
+                    PaymentTransactionId = paymentTx.Id,
+                    TotalAmount = paymentTx.TotalAmount,
+                    PaymentUrl = paymentTx.PaymentUrl,
+                    TransactionId = paymentTx.TransactionId,
+                    PaymentStatus = paymentTx.PaymentStatus.ToString(),
+                    // Không cần trả OrderIds, vì Frontend chỉ cần URL để redirect.
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = $"Lỗi dữ liệu: {ex.Message}" });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = $"Lỗi logic thanh toán: {ex.Message}" });
+            }
+            catch (Exception ex)
+            {
+                // TODO: Log exception chi tiết
+                return StatusCode(500, new { message = $"Lỗi hệ thống khi tạo đơn hàng: {ex.Message}" });
+            }
+        }
 
-        //        var paymentTx = await _service.CreateFromCart(customerId, request, accessToken);
+        // ==========================
+        // 🎯 THANH TOÁN COD
+        // ==========================
+        /// <summary>
+        /// Tạo đơn hàng với phương thức thanh toán COD (Thanh toán khi nhận hàng).
+        /// </summary>
+        [HttpPost("checkout-cod")]
+        public async Task<IActionResult> CheckoutCOD([FromBody] OrderCreateRequest request)
+        {
+            var customerId = GetCustomerId();
 
-        //        if (request.PaymentMethod == PaymentMethod.COD)
-        //        {
-        //            return Ok(new
-        //            {
-        //                Message = "Đơn hàng COD đã được tạo thành công.",
-        //                OrderIds = paymentTx.Orders.Select(o => o.Id).ToList()
-        //            });
-        //        }
+            if (customerId == Guid.Empty)
+                return Unauthorized("Không tìm thấy thông tin khách hàng (Customer ID) trong token.");
 
-        //        // Phản hồi thanh toán online: Lấy PaymentUrl và TransactionId từ PaymentTransaction
-        //        return Ok(new
-        //        {
-        //            PaymentTransactionId = paymentTx.Id,
-        //            TotalAmount = paymentTx.TotalAmount,
-        //            PaymentUrl = paymentTx.PaymentUrl,          // ✅ Correct: Lấy từ paymentTx
-        //            TransactionId = paymentTx.TransactionId,    // ✅ Correct: Lấy từ paymentTx
-        //            PaymentStatus = paymentTx.PaymentStatus.ToString(),
-        //            OrderIds = paymentTx.Orders.Select(o => o.Id).ToList()
-        //        });
-        //    }
-        //    catch (ArgumentException ex)
-        //    {
-        //        return BadRequest(new { message = $"Lỗi dữ liệu: {ex.Message}" });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, new { message = $"Lỗi hệ thống khi tạo đơn hàng: {ex.Message}" });
-        //    }
-        //}
+            // CHỈ CHO PHÉP thanh toán COD
+            if (request.PaymentMethod != PaymentMethod.COD)
+                return BadRequest(new { message = "API này chỉ hỗ trợ phương thức thanh toán COD." });
+
+            try
+            {
+                // Gọi phương thức tạo đơn hàng COD
+                // AccessToken không cần thiết cho luồng này nên truyền string.Empty
+                var paymentTx = await _service.CreateFromCart(customerId, request, string.Empty);
+
+                // Phản hồi: Trả về ID giao dịch đã được tạo
+                return Ok(new
+                {
+                    PaymentTransactionId = paymentTx.Id,
+                    TotalAmount = paymentTx.TotalAmount,
+                    PaymentStatus = paymentTx.PaymentStatus.ToString(),
+                    Message = "Đơn hàng COD được tạo thành công."
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = $"Lỗi dữ liệu: {ex.Message}" });
+            }
+            catch (Exception ex)
+            {
+                // TODO: Log exception chi tiết
+                return StatusCode(500, new { message = $"Lỗi hệ thống khi tạo đơn hàng COD: {ex.Message}" });
+            }
+        }
 
 
         // ==========================
-        // 🔹 POST: Khởi tạo thanh toán (Đơn hàng đơn lẻ)
+        // CALLBACKS (VNPAY)
         // ==========================
-        //[HttpPost("{id:guid}/payment/initiate")]
-        //public async Task<IActionResult> InitiatePayment(int id)
-        //{
-        //    try
-        //    {
-        //        var paymentTx = await _service.InitiatePayment(id);
 
-        //        return Ok(new
-        //        {
-        //            PaymentTransactionId = paymentTx.Id,
-        //            TotalAmount = paymentTx.TotalAmount,
-        //            PaymentUrl = paymentTx.PaymentUrl,          // ✅ Correct: Lấy từ paymentTx
-        //            TransactionId = paymentTx.TransactionId,    // ✅ Correct: Lấy từ paymentTx
-        //            PaymentStatus = paymentTx.PaymentStatus.ToString()
-        //        });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return BadRequest(new { message = $"Lỗi khởi tạo thanh toán: {ex.Message}" });
-        //    }
-        //}
+        /// GET: IPN URL (Server VNPAY gọi đến) - Nơi chính thức cập nhật DB.
+        [HttpGet("vnpay-ipn")]
+        [Produces("application/json")]
+        public async Task<IActionResult> VnpayIpnCallback([FromQuery] Dictionary<string, string> vnpayData)
+        {
+            // Lấy vnp_TxnRef (ID nội bộ của PaymentTransaction) từ query string
+            if (!vnpayData.TryGetValue("vnp_TxnRef", out var txnRef) || string.IsNullOrWhiteSpace(txnRef))
+            {
+                return Ok(new { RspCode = "99", Message = "Input data required (missing vnp_TxnRef)" });
+            }
 
-        // 🔹 POST: Callback từ nhà cung cấp thanh toán (Webhook) (Giữ nguyên)
-        //[AllowAnonymous]
-        //[HttpPost("payment/callback")]
-        //public async Task<IActionResult> PaymentCallback([FromForm] string transactionId)
-        //{
-        //    var dict = Request.Form.ToDictionary(kv => kv.Key, kv => kv.Value.ToString());
+            try
+            {
+                // Gọi Service để xác thực Hash và cập nhật DB
+                var success = await _service.HandlePaymentCallback(txnRef, vnpayData);
 
-        //    var success = await _service.HandlePaymentCallback(transactionId, dict);
+                if (success)
+                {
+                    // VNPAY yêu cầu phản hồi JSON: 00 = Thành công (DB đã cập nhật)
+                    return Content("{\"RspCode\":\"00\",\"Message\":\"Confirm Success\"}", "application/json");
+                }
+                else
+                {
+                    // Lỗi: Chữ ký không hợp lệ, hoặc kiểm tra khác thất bại
+                    return Ok(new { RspCode = "97", Message = "Invalid signature or payment failed" });
+                }
+            }
+            catch (Exception ex)
+            {
+                // Lỗi hệ thống, yêu cầu VNPAY thử lại (Retry)
+                // TODO: Log exception chi tiết
+                return StatusCode(200, new { RspCode = "99", Message = $"System Error: {ex.Message}" });
+            }
+        }
 
-        //    if (!success)
-        //        return BadRequest(new { message = "Xử lý callback thanh toán thất bại." });
+        /// GET: Return URL (Trình duyệt Khách hàng được Redirect về) - Chỉ hiển thị thông báo.
+        [HttpGet("vnpay-return")]
+        public async Task<IActionResult> VnpayReturnCallback([FromQuery] Dictionary<string, string> vnpayData)
+        {
+            // KHÔNG cập nhật DB tại đây. Chỉ xác thực Hash và chuyển hướng khách hàng về trang kết quả.
 
-        //    return Ok("Success");
-        //}
+            vnpayData.TryGetValue("vnp_TxnRef", out var txnRef);
 
-        // ==========================
-        // 🔹 PUT (Giữ nguyên)
-        // ==========================
+            // Gọi service để xác thực kết quả nhận được từ VNPAY
+            var validationResult = await _paymentService.HandleCallbackAsync(txnRef, vnpayData);
+
+            // Dựa vào kết quả validation (kiểm tra hash và trạng thái) để hiển thị cho KH
+            if (validationResult.Success)
+            {
+                // Giao dịch thành công (DB đã được IPN cập nhật)
+                return Ok(new { Message = "Giao dịch thành công. Đơn hàng đang được xử lý.", TxnRef = txnRef, VNPAY_Status = vnpayData.GetValueOrDefault("vnp_ResponseCode") });
+            }
+
+            // Giao dịch thất bại
+            return Ok(new { Message = $"Giao dịch thất bại. Mã lỗi VNPAY: {vnpayData.GetValueOrDefault("vnp_ResponseCode")}", TxnRef = txnRef });
+        }
+
+
+        // 
         [HttpPut("{id:guid}/confirm")]
         [Authorize(Roles = "Admin,Seller")]
         public async Task<IActionResult> Confirm(Guid id)
         {
+            // Logic Confirm Order
             return Ok(new { message = "Confirm logic needs implementation." });
         }
 
         [HttpPut("{id:guid}/cancel")]
         public async Task<IActionResult> Cancel(int id)
         {
+            // Logic Cancel Order
             return Ok(new { message = "Cancel logic needs implementation." });
         }
-
-        // ==========================
-        // 🔹 POST: Kiểm tra trạng thái thanh toán (Polling)
-        // ==========================
-        //[HttpPost("{orderId:guid}/payment/check-status")]
-        //public async Task<IActionResult> CheckPaymentStatus(int orderId)
-        //{
-        //    var order = await _service.GetById(orderId);
-        //    if (order == null) return NotFound();
-
-        //    // 1. Kiểm tra trạng thái trong DB trước
-        //    if (order.PaymentStatus == PaymentStatus.Paid)
-        //        // Phản hồi chỉ dùng thuộc tính của Order (PaymentStatus, PaymentTransactionId)
-        //        return Ok(new { status = "Paid", order.PaymentTransactionId });
-
-        //    // 2. Nếu chưa Paid, gọi Service để kiểm tra Payment Transaction từ cổng thanh toán
-        //    var isPaid = await _service.UpdatePaymentStatusAfterScan(orderId);
-
-        //    if (isPaid)
-        //        // Lấy lại Order đã cập nhật để trả về status mới
-        //        order = await _service.GetById(orderId);
-
-        //    // Phản hồi chỉ dùng thuộc tính của Order (PaymentStatus, PaymentTransactionId)
-        //    return Ok(new { status = order.PaymentStatus.ToString(), order.PaymentTransactionId });
-        //}
     }
 }
