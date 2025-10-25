@@ -7,7 +7,7 @@ services:
       dockerfile: src/OrderService/OrderService.Api/Dockerfile
     container_name: orderservice
     environment:
-      ConnectionStrings__OrderServiceConnection: User Id=postgres.wvkkbaduxsdeqwzjrjgw;Password=0328802216Zz.;Server=aws-1-us-east-2.pooler.supabase.com;Port=5432;Database=postgres;
+      ConnectionStrings__OrderServiceConnection: User Id=postgres.wvkkbaduxsdeqwzjrjgw;Password=0328802216Zz.;Server=aws-1-us-east-2.pooler.supabase.com;Port=5432;Database=postgres;SslMode=Require;Timeout=30;
       Jwt__Key: BookbridgeJWTKey_2025_Secure_ABC123!
       ASPNETCORE_ENVIRONMENT: Development
     ports:
