@@ -196,7 +196,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// app.UseHttpsRedirection(); // Đã comment
+// app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();

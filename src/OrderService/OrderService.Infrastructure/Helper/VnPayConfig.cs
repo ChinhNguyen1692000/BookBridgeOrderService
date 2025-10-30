@@ -8,7 +8,8 @@ namespace OrderService.Application.Services.Payment
         public string BaseUrl { get; set; } = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
         
         // URL Front-end sau khi thanh toán xong
-        public string ReturnUrl { get; set; } = "https://e00d56ad.bookbridge-5ju.pages.dev"; 
+        // public string ReturnUrl { get; set; } = "https://e00d56ad.bookbridge-5ju.pages.dev"; 
+        public string ReturnUrl { get; set; } = "https://google.com"; 
         
         // URL API của Controller (Nơi nhận IPN)
         public string IpnUrl { get; set; } = "https://bookbridgeorderservicev2.onrender.com/api/orders/vnpay-ipn"; 

@@ -3397,11 +3397,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\My githhub repo(UserSerivce)\\BookBridgeOrderService\\src\\OrderService\\OrderService.Application\\OrderService.Application.csproj",
+      "projectUniqueName": "E:\\My githhub repo(All Micro Serivces)\\BookBridgeOrderService\\src\\OrderService\\OrderService.Application\\OrderService.Application.csproj",
       "projectName": "OrderService.Application",
-      "projectPath": "E:\\My githhub repo(UserSerivce)\\BookBridgeOrderService\\src\\OrderService\\OrderService.Application\\OrderService.Application.csproj",
+      "projectPath": "E:\\My githhub repo(All Micro Serivces)\\BookBridgeOrderService\\src\\OrderService\\OrderService.Application\\OrderService.Application.csproj",
       "packagesPath": "C:\\Users\\Chinh\\.nuget\\packages\\",
-      "outputPath": "E:\\My githhub repo(UserSerivce)\\BookBridgeOrderService\\src\\OrderService\\OrderService.Application\\obj\\",
+      "outputPath": "E:\\My githhub repo(All Micro Serivces)\\BookBridgeOrderService\\src\\OrderService\\OrderService.Application\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Chinh\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -3416,11 +3416,11 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "E:\\My githhub repo(UserSerivce)\\BookBridgeOrderService\\src\\Common\\Common.csproj": {
-              "projectPath": "E:\\My githhub repo(UserSerivce)\\BookBridgeOrderService\\src\\Common\\Common.csproj"
+            "E:\\My githhub repo(All Micro Serivces)\\BookBridgeOrderService\\src\\Common\\Common.csproj": {
+              "projectPath": "E:\\My githhub repo(All Micro Serivces)\\BookBridgeOrderService\\src\\Common\\Common.csproj"
             },
-            "E:\\My githhub repo(UserSerivce)\\BookBridgeOrderService\\src\\OrderService\\OrderService.Infrastructure\\OrderService.Infrastructure.csproj": {
-              "projectPath": "E:\\My githhub repo(UserSerivce)\\BookBridgeOrderService\\src\\OrderService\\OrderService.Infrastructure\\OrderService.Infrastructure.csproj"
+            "E:\\My githhub repo(All Micro Serivces)\\BookBridgeOrderService\\src\\OrderService\\OrderService.Infrastructure\\OrderService.Infrastructure.csproj": {
+              "projectPath": "E:\\My githhub repo(All Micro Serivces)\\BookBridgeOrderService\\src\\OrderService\\OrderService.Infrastructure\\OrderService.Infrastructure.csproj"
             }
           }
         }

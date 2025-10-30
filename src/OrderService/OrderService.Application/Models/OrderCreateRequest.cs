@@ -4,7 +4,7 @@
 public class OrderCreateRequest
 {
     public Guid CustomerId { get; set; }
-    public string CustomerEmail { get; set; } // Sẽ được Controller ghi đè
+    // public string CustomerEmail { get; set; } // Sẽ được Controller ghi đè
     public string CustomerPhoneNumber { get; set; }
     public string DeliveryAddress { get; set; }
     public OrderService.Domain.Entities.PaymentMethod PaymentMethod { get; set; }

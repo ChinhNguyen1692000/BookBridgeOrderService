@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "mRX+cLueBjc=",
+  "dgSpecHash": "b7FoRlaVMEc=",
   "success": true,
-  "projectFilePath": "E:\\My githhub repo(UserSerivce)\\BookBridgeOrderService\\src\\OrderService\\OrderService.Application\\OrderService.Application.csproj",
+  "projectFilePath": "E:\\My githhub repo(All Micro Serivces)\\BookBridgeOrderService\\src\\OrderService\\OrderService.Application\\OrderService.Application.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Chinh\\.nuget\\packages\\automapper\\12.0.1\\automapper.12.0.1.nupkg.sha512",
     "C:\\Users\\Chinh\\.nuget\\packages\\automapper.extensions.microsoft.dependencyinjection\\12.0.1\\automapper.extensions.microsoft.dependencyinjection.12.0.1.nupkg.sha512",

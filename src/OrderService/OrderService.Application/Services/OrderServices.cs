@@ -101,7 +101,7 @@ namespace OrderService.Application.Services
             if (checkoutRequest.Stores == null || !checkoutRequest.Stores.Any() || checkoutRequest.Stores.All(s => !s.OrderItems.Any()))
                 throw new ArgumentException("Yêu cầu thanh toán không chứa mặt hàng nào hoặc cửa hàng hợp lệ.");
             
-            // 💡 CHỈ XỬ LÝ LUỒNG ONLINE (VNPAY)
+            // CHỈ XỬ LÝ LUỒNG ONLINE (VNPAY)
             if (checkoutRequest.PaymentMethod == PaymentMethod.COD)
                 throw new InvalidOperationException("Phương thức COD không được gọi qua API này.");
 
@@ -124,7 +124,7 @@ namespace OrderService.Application.Services
                     CustomerPhoneNumber = checkoutRequest.CustomerPhoneNumber,
                     DeliveryAddress = checkoutRequest.DeliveryAddress,
                     PaymentMethod = checkoutRequest.PaymentMethod,
-                    // 💡 SỬA LỖI GÁN PaymentProvider (Sử dụng enum đã định nghĩa)
+                    // SỬA LỖI GÁN PaymentProvider (Sử dụng enum đã định nghĩa)
                     PaymentProvider = paymentProvider, 
                     OrderDate = DateTime.UtcNow,
                     OrderNumber = $"ORD-{DateTime.UtcNow:yyyyMMddHHmmssfff}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpper()}",
@@ -205,7 +205,7 @@ namespace OrderService.Application.Services
             OrderCreateRequest checkoutRequest,
             string accessToken)
         {
-            // 💡 CHỈ XỬ LÝ LUỒNG COD
+            // CHỈ XỬ LÝ LUỒNG COD
             if (checkoutRequest.PaymentMethod != PaymentMethod.COD)
                 throw new InvalidOperationException("Service này chỉ hỗ trợ tạo đơn COD từ giỏ hàng.");
 

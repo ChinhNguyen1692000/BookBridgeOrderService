@@ -58,3 +58,23 @@ E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderSer
 E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\OrderService.Infrastructure.pdb
 E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\OrderService.Infrastructure.genruntimeconfig.cache
 E:\My githhub repo(UserSerivce)\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\ref\OrderService.Infrastructure.dll
+E:\My githhub repo(All Micro Serivces)\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\bin\Debug\net8.0\OrderService.Infrastructure.deps.json
+E:\My githhub repo(All Micro Serivces)\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\bin\Debug\net8.0\OrderService.Infrastructure.runtimeconfig.json
+E:\My githhub repo(All Micro Serivces)\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\bin\Debug\net8.0\OrderService.Infrastructure.dll
+E:\My githhub repo(All Micro Serivces)\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\bin\Debug\net8.0\OrderService.Infrastructure.pdb
+E:\My githhub repo(All Micro Serivces)\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\bin\Debug\net8.0\Common.dll
+E:\My githhub repo(All Micro Serivces)\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\bin\Debug\net8.0\OrderService.Domain.dll
+E:\My githhub repo(All Micro Serivces)\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\bin\Debug\net8.0\Common.pdb
+E:\My githhub repo(All Micro Serivces)\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\bin\Debug\net8.0\OrderService.Domain.pdb
+E:\My githhub repo(All Micro Serivces)\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\OrderService.Infrastructure.csproj.AssemblyReference.cache
+E:\My githhub repo(All Micro Serivces)\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\OrderService.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+E:\My githhub repo(All Micro Serivces)\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\OrderService.Infrastructure.AssemblyInfoInputs.cache
+E:\My githhub repo(All Micro Serivces)\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\OrderService.Infrastructure.AssemblyInfo.cs
+E:\My githhub repo(All Micro Serivces)\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\OrderService.Infrastructure.csproj.CoreCompileInputs.cache
+E:\My githhub repo(All Micro Serivces)\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\OrderService.Infrastructure.sourcelink.json
+E:\My githhub repo(All Micro Serivces)\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\OrderSer.30472D0A.Up2Date
+E:\My githhub repo(All Micro Serivces)\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\OrderService.Infrastructure.dll
+E:\My githhub repo(All Micro Serivces)\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\refint\OrderService.Infrastructure.dll
+E:\My githhub repo(All Micro Serivces)\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\OrderService.Infrastructure.pdb
+E:\My githhub repo(All Micro Serivces)\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\OrderService.Infrastructure.genruntimeconfig.cache
+E:\My githhub repo(All Micro Serivces)\BookBridgeOrderService\src\OrderService\OrderService.Infrastructure\obj\Debug\net8.0\ref\OrderService.Infrastructure.dll

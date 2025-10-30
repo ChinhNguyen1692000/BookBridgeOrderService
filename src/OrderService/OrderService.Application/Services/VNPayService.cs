@@ -73,12 +73,27 @@ namespace OrderService.Application.Services.Payment
                 }
             }
 
-            // Chuỗi dữ liệu thô để tính Hash
-            var rawData = string.Join("&", vnp_Params.Select(kv => kv.Key + "=" + kv.Value));
-            var vnp_SecureHash = HmacSHA512(_config.HashSecret, rawData);
+            // 2. Build query string (encode trước khi hash)
+            var query = new StringBuilder();
+            var hashData = new StringBuilder();
 
-            // Xây dựng Payment URL cuối cùng
-            var paymentUrl = _config.BaseUrl + "?" + data.ToString().TrimEnd('&') + "&vnp_SecureHash=" + vnp_SecureHash;
+            foreach (var kv in vnp_Params)
+            {
+                if (!string.IsNullOrEmpty(kv.Value))
+                {
+                    query.Append(WebUtility.UrlEncode(kv.Key) + "=" + WebUtility.UrlEncode(kv.Value) + "&");
+                    hashData.Append(kv.Key + "=" + kv.Value + "&");
+                }
+            }
+
+            // Bỏ dấu & cuối nếu có
+            if (query.Length > 0) query.Length -= 1;
+            if (hashData.Length > 0) hashData.Length -= 1;
+
+            // Hash từ dữ liệu CHƯA encode
+            var vnp_SecureHash = HmacSHA512(_config.HashSecret, hashData.ToString());
+
+            var paymentUrl = $"{_config.BaseUrl}?{query}&vnp_SecureHash={vnp_SecureHash}";
 
             // 3. Trả về kết quả
             return Task.FromResult(new PaymentResult

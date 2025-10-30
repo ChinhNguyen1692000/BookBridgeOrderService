@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\My githhub repo(UserSerivce)\\BookBridgeOrderService\\src\\OrderService\\OrderService.Domain\\OrderService.Domain.csproj",
+      "projectUniqueName": "E:\\My githhub repo(All Micro Serivces)\\BookBridgeOrderService\\src\\OrderService\\OrderService.Domain\\OrderService.Domain.csproj",
       "projectName": "OrderService.Domain",
-      "projectPath": "E:\\My githhub repo(UserSerivce)\\BookBridgeOrderService\\src\\OrderService\\OrderService.Domain\\OrderService.Domain.csproj",
+      "projectPath": "E:\\My githhub repo(All Micro Serivces)\\BookBridgeOrderService\\src\\OrderService\\OrderService.Domain\\OrderService.Domain.csproj",
       "packagesPath": "C:\\Users\\Chinh\\.nuget\\packages\\",
-      "outputPath": "E:\\My githhub repo(UserSerivce)\\BookBridgeOrderService\\src\\OrderService\\OrderService.Domain\\obj\\",
+      "outputPath": "E:\\My githhub repo(All Micro Serivces)\\BookBridgeOrderService\\src\\OrderService\\OrderService.Domain\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Chinh\\AppData\\Roaming\\NuGet\\NuGet.Config"
