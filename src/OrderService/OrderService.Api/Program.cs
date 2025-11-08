@@ -162,7 +162,7 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"❌ Redis connection failed: {ex.Message}");
+        Console.WriteLine($" Redis connection failed: {ex.Message}");
         throw;
     }
 });

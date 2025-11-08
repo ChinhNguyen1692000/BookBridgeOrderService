@@ -40,9 +40,12 @@ namespace OrderService.Application.Services.Payment
         public Task<PaymentResult> InitiatePaymentAsync(PaymentTransaction transaction, string customerIpAddress)
         {
             var vnp_Params = new SortedList<string, string>(new VnPayCompare());
-            var timeNow = DateTime.Now;
 
             // 1. Chuẩn bị dữ liệu yêu cầu
+            var timeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var timeNowUtc = DateTime.UtcNow;
+            var timeNow = TimeZoneInfo.ConvertTimeFromUtc(timeNowUtc, timeZone);
+
             vnp_Params.Add("vnp_Version", _config.Version);
             vnp_Params.Add("vnp_Command", "pay");
             vnp_Params.Add("vnp_TmnCode", _config.TmnCode);
