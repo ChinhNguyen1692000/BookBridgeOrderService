@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 namespace OrderService.Api.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [ApiController]
     [Route("api/orders")]
     public class OrderController : BaseApiController

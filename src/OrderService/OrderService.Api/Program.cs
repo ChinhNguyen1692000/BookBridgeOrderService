@@ -13,12 +13,12 @@ using OrderService.Infracstructure.DBContext;
 using OrderService.Infracstructure.Repositories;
 using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
-using OrderService.Application.Models; // Namespace này có thể chứa VNPayConfig cũ
+using OrderService.Application.Models; 
 using Microsoft.Extensions.Logging;
 
-// Đặt bí danh cho VNPayConfig cần sử dụng để tránh lỗi CS0104 (tham chiếu mơ hồ)
+
 using VNPayConfig = OrderService.Application.Services.Payment.VNPayConfig; 
-using IPaymentService = OrderService.Application.Interface.IPaymentService; // Đặt bí danh cho interface
+using IPaymentService = OrderService.Application.Interface.IPaymentService;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -40,7 +40,7 @@ builder.Services.AddDbContext<OrderDbContext>(options =>
 
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-builder.Services.AddAutoMapper(typeof(OrderMappingProfile).Assembly); // Thêm dòng này là dư, đã có dòng trên
+builder.Services.AddAutoMapper(typeof(OrderMappingProfile).Assembly);
 
 builder.Services.AddScoped<IOrderServices, OrderServices>();
 builder.Services.AddScoped<PaymentTransactionRepository>();
@@ -49,7 +49,7 @@ builder.Services.AddScoped<OrderItemRepository>();
 builder.Services.AddScoped<ICacheService, RedisCacheService>();
 
 // =========================================================================
-// 🎯 ĐĂNG KÝ CẤU HÌNH VÀ PAYMENT SERVICE (ĐÃ CHUẨN HÓA VÀ FIX LỖI)
+//  ĐĂNG KÝ CẤU HÌNH VÀ PAYMENT SERVICE 
 // =========================================================================
 
 // 1. Đăng ký Cấu hình VNPay: Sử dụng IOptions Pattern (Cách chuẩn để đọc config vào service)
