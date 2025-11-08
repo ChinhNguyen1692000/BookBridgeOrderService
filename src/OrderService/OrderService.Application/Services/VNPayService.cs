@@ -85,7 +85,7 @@ namespace OrderService.Application.Services.Payment
                 if (!string.IsNullOrEmpty(kv.Value))
                 {
                     query.Append(WebUtility.UrlEncode(kv.Key) + "=" + WebUtility.UrlEncode(kv.Value) + "&");
-                    hashData.Append(kv.Key + "=" + kv.Value + "&");
+                    hashData.Append(kv.Key + "=" + WebUtility.UrlEncode(kv.Value) + "&");
                 }
             }
 
@@ -176,7 +176,7 @@ namespace OrderService.Application.Services.Payment
                 vnp_Params.Add(key, value);
             }
 
-            var rawData = string.Join("&", vnp_Params.Select(kv => kv.Key + "=" + kv.Value));
+            var rawData = string.Join("&", vnp_Params.Select(kv => kv.Key + "=" + WebUtility.UrlEncode(kv.Value)));
             string calculatedHash = HmacSHA512(_config.HashSecret, rawData);
 
             return calculatedHash.Equals(receivedHash, StringComparison.OrdinalIgnoreCase);

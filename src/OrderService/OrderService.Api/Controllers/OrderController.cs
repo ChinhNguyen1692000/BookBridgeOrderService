@@ -101,7 +101,7 @@ namespace OrderService.Api.Controllers
         // ==========================
         // THANH TOÁN ONLINE (VNPAY, MoMo...)
         // ==========================
-        // Tạo đơn hàng và khởi tạo giao dịch thanh toán Online (redirect URL).
+        /// Tạo đơn hàng và khởi tạo giao dịch thanh toán Online (redirect URL).
         [HttpPost("checkout-online")]
         [Authorize(Roles = "Buyer")]
         public async Task<IActionResult> CheckoutOnline([FromBody] OrderCreateRequest request)
@@ -149,7 +149,11 @@ namespace OrderService.Api.Controllers
         // ==========================
         //  THANH TOÁN COD
         // ==========================
-        // Tạo đơn hàng với phương thức thanh toán COD (Thanh toán khi nhận hàng).
+        /// <summary>
+        /// Tạo đơn hàng với phương thức thanh toán COD (Thanh toán khi nhận hàng).
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         [HttpPost("checkout-cod")]
         [Authorize(Roles = "Buyer")]
         public async Task<IActionResult> CheckoutCOD([FromBody] OrderCreateRequest request)
