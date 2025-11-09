@@ -60,7 +60,7 @@ namespace OrderService.Application.Services.Payment
 
             // QUAN TRỌNG: 
             vnp_Params.Add("vnp_ReturnUrl", _config.ReturnUrl); // Trình duyệt Khách hàng (GET)
-            // vnp_Params.Add("vnp_IpnUrl", _config.IpnUrl);       // Server-to-Server (GET/POST)
+            vnp_Params.Add("vnp_IpnUrl", _config.IpnUrl);       // Server-to-Server (GET/POST)
 
             vnp_Params.Add("vnp_TxnRef", transaction.Id.ToString("N")); // ID giao dịch nội bộ (PaymentTransaction.Id)
             vnp_Params.Add("vnp_ExpireDate", timeNow.AddMinutes(15).ToString("yyyyMMddHHmmss"));

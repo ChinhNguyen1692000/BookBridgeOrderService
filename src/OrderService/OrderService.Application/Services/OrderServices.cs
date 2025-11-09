@@ -100,7 +100,7 @@ namespace OrderService.Application.Services
         {
             if (checkoutRequest.Stores == null || !checkoutRequest.Stores.Any() || checkoutRequest.Stores.All(s => !s.OrderItems.Any()))
                 throw new ArgumentException("Yêu cầu thanh toán không chứa mặt hàng nào hoặc cửa hàng hợp lệ.");
-            
+
             // CHỈ XỬ LÝ LUỒNG ONLINE (VNPAY)
             if (checkoutRequest.PaymentMethod == PaymentMethod.COD)
                 throw new InvalidOperationException("Phương thức COD không được gọi qua API này.");
@@ -125,7 +125,7 @@ namespace OrderService.Application.Services
                     DeliveryAddress = checkoutRequest.DeliveryAddress,
                     PaymentMethod = checkoutRequest.PaymentMethod,
                     // SỬA LỖI GÁN PaymentProvider (Sử dụng enum đã định nghĩa)
-                    PaymentProvider = paymentProvider, 
+                    PaymentProvider = paymentProvider,
                     OrderDate = DateTime.UtcNow,
                     OrderNumber = $"ORD-{DateTime.UtcNow:yyyyMMddHHmmssfff}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpper()}",
                     OrderStatus = OrderStatus.Created, // Đã tạo, chờ thanh toán
@@ -281,7 +281,7 @@ namespace OrderService.Application.Services
             );
 
             if (savedTx == null) throw new Exception("Tạo giao dịch thanh toán thất bại.");
-            
+
             return savedTx;
         }
 
@@ -313,7 +313,7 @@ namespace OrderService.Application.Services
             else
             {
                 paymentTx.PaymentStatus = PaymentStatus.Failed;
-                
+
                 foreach (var order in paymentTx.Orders)
                 {
                     order.PaymentStatus = PaymentStatus.Failed;
@@ -332,6 +332,67 @@ namespace OrderService.Application.Services
         public async Task<IEnumerable<Order>> SearchByCustomerEmail(string email)
         {
             throw new NotImplementedException("You must call UserService to resolve email->userId");
+        }
+
+        public async Task<decimal> GetTotalRevenueThisMonthAsync()
+        {
+            // Lấy ngày đầu tiên của tháng hiện tại
+            var firstDayOfMonth = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
+
+            // Chỉ tính tổng tiền của các đơn hàng đã thanh toán (PaymentStatus = Paid)
+            // Giả định Order.OrderDate là thời điểm tạo đơn hàng, ta sẽ lọc theo thời điểm PaidDate hoặc OrderDate nếu PaidDate chưa có.
+            // Để chính xác nhất, ta nên dùng PaidDate nếu có, hoặc OrderDate nếu là đơn COD/thanh toán thành công ngay.
+            // Ở đây, tôi dùng OrderDate để đơn giản hóa, giả định tất cả đơn đã thanh toán/xác nhận trong tháng này.
+            // Nếu bạn muốn chính xác hơn, cần đảm bảo PaymentTransaction.PaidDate được set đúng.
+
+            var revenue = await _paymentTxRepo.GetTotalRevenueFromPaidTransactionsInMonthAsync(firstDayOfMonth);
+
+            // Lưu ý: Cần triển khai phương thức GetTotalRevenueFromPaidTransactionsInMonthAsync trong PaymentTransactionRepository
+
+            return revenue;
+        }
+
+        public async Task<OrderStatisticsModel> GetOrderAndProductStatisticsAsync()
+        {
+            // Lưu ý: Cần triển khai các phương thức này trong OrderRepository
+            var totalOrders = await _repo.CountAllOrdersAsync();
+            var totalProductsSold = await _repo.CountTotalProductsSoldAsync();
+
+            return new OrderStatisticsModel
+            {
+                TotalOrders = totalOrders,
+                TotalProductsSold = totalProductsSold
+            };
+            // Lưu ý: Cần định nghĩa OrderStatisticsModel
+        }
+
+        public async Task<Order> UpdateOrderStatusAsync(int orderId, OrderStatus newStatus)
+        {
+            var exist = await _repo.GetByIdAsync(orderId);
+
+            if (exist == null) throw new KeyNotFoundException($"Không tìm thấy đơn hàng với ID: {orderId}");
+
+            // Logic kiểm tra chuyển đổi trạng thái (nếu cần)
+            // Ví dụ: if (exist.OrderStatus == OrderStatus.Delivered) throw new InvalidOperationException("Không thể thay đổi trạng thái đơn hàng đã giao.");
+
+            var success = await _repo.UpdateOrderStatusAsync(orderId, newStatus);
+
+            if (!success) throw new Exception($"Cập nhật trạng thái đơn hàng ID {orderId} thất bại.");
+
+            // Cập nhật lại Order sau khi lưu DB (hoặc lấy lại từ DB nếu muốn chắc chắn)
+            // Do ta dùng UpdateOrderStatusAsync trong repo (chỉ cập nhật trường đó), nên ta update thủ công đối tượng lấy ra trước đó
+            exist.OrderStatus = newStatus;
+            return exist;
+        }
+
+        public async Task<PagedResult<Order>> SearchOrdersAsync(int? orderId, Guid? customerId, int? bookstoreId, OrderStatus? status, int pageNo = 1, int pageSize = 10)
+        {
+            // Sử dụng OrderRepository để tìm kiếm
+            var filteredOrders = await _repo.SearchOrdersAsync(orderId, customerId, bookstoreId, status);
+
+            // Giả định OrderRepository có phương thức SearchOrdersAsync trả về List<Order>
+            var pagedResult = PagedResult<Order>.Create(filteredOrders, pageNo, pageSize);
+            return pagedResult;
         }
     }
 }

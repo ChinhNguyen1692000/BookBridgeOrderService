@@ -24,5 +24,10 @@ namespace OrderService.Application.Interface
         string accessToken);
 
         Task<bool> HandlePaymentCallback(string transactionId, IDictionary<string, string> payload);
+
+        Task<decimal> GetTotalRevenueThisMonthAsync();
+        Task<OrderStatisticsModel> GetOrderAndProductStatisticsAsync();
+        Task<Order> UpdateOrderStatusAsync(int orderId, OrderStatus newStatus);
+        Task<PagedResult<Order>> SearchOrdersAsync(int? orderId, Guid? customerId, int? bookstoreId, OrderStatus? status, int pageNo = 1, int pageSize = 10);
     }
 }

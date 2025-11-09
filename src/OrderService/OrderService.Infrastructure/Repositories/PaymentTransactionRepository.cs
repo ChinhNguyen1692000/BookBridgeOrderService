@@ -69,5 +69,17 @@ namespace OrderService.Infracstructure.Repositories
                 throw;
             }
         }
+        public async Task<decimal> GetTotalRevenueFromPaidTransactionsInMonthAsync(DateTime monthStart)
+        {
+            var monthEnd = monthStart.AddMonths(1);
+
+            var total = await _dbSet
+                .Where(pt => pt.PaymentStatus == PaymentStatus.Paid &&
+                             pt.PaidDate >= monthStart &&
+                             pt.PaidDate < monthEnd)
+                .SumAsync(pt => pt.TotalAmount);
+
+            return total;
+        }
     }
 }

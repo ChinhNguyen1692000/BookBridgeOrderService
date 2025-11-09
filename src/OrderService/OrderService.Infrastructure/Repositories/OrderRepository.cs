@@ -15,7 +15,7 @@ namespace OrderService.Infracstructure.Repositories
         private readonly OrderDbContext _context;
 
         // Cập nhật Constructor để lưu _context
-        public OrderRepository(OrderDbContext context) : base(context) 
+        public OrderRepository(OrderDbContext context) : base(context)
         {
             _context = context;
         }
@@ -25,7 +25,7 @@ namespace OrderService.Infracstructure.Repositories
         private async Task<bool> UpdateOrderFieldAsync(int orderId, Action<Order> updateAction)
         {
             // Sử dụng FindAsync để tránh AsNoTracking nếu muốn update
-            var order = await _dbSet.FirstOrDefaultAsync(o => o.Id == orderId); 
+            var order = await _dbSet.FirstOrDefaultAsync(o => o.Id == orderId);
             if (order == null) return false;
 
             updateAction(order);
@@ -117,5 +117,50 @@ namespace OrderService.Infracstructure.Repositories
 
         public Task<bool> UpdateDeliveredDateAsync(int orderId, DateTime deliveredDate)
             => UpdateOrderFieldAsync(orderId, o => o.DeliveriedDate = deliveredDate);
+
+        public async Task<int> CountAllOrdersAsync()
+        {
+            return await _dbSet.CountAsync();
+        }
+
+        public async Task<long> CountTotalProductsSoldAsync()
+        {
+            // Đếm tổng số lượng (Quantity) từ tất cả OrderItems
+            // Vì OrderItems có OrderId, ta có thể tính trực tiếp nếu không cần lọc theo thời gian/status
+            return await _context.OrderItems.SumAsync(oi => (long)oi.Quantity);
+        }
+
+
+        // 2. API lấy order theo status, orderid, bookstoreid (Có thể tùy chọn nhập/bỏ trống)
+        public async Task<List<Order>> SearchOrdersAsync(int? orderId, Guid? customerId, int? bookstoreId, OrderStatus? status)
+        {
+            var query = _dbSet.AsQueryable();
+
+            if (orderId.HasValue)
+            {
+                query = query.Where(o => o.Id == orderId.Value);
+            }
+
+            if (customerId.HasValue)
+            {
+                query = query.Where(o => o.CustomerId == customerId.Value);
+            }
+
+            if (bookstoreId.HasValue)
+            {
+                query = query.Where(o => o.BookstoreId == bookstoreId.Value);
+            }
+
+            if (status.HasValue)
+            {
+                query = query.Where(o => o.OrderStatus == status.Value);
+            }
+
+            // Thêm Include để lấy đủ thông tin
+            return await query
+                .Include(o => o.OrderItems)
+                .AsNoTracking()
+                .ToListAsync();
+        }
     }
 }

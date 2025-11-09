@@ -12,7 +12,7 @@ namespace OrderService.Application.Services.Payment
         public string ReturnUrl { get; set; } = "https://google.com"; 
         
         // URL API của Controller (Nơi nhận IPN)
-        public string IpnUrl { get; set; } = "https://bookbridgeorderservicev2.onrender.com/api/orders/vnpay-ipn"; 
+        public string IpnUrl { get; set; } = "https://www.bookbridge.io.vn/gateway/orders/vnpay-ipn"; 
         
         public string Version { get; set; } = "2.1.0";
     }

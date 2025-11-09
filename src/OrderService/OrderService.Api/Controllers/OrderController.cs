@@ -200,6 +200,7 @@ namespace OrderService.Api.Controllers
 
         /// GET: IPN URL (Server VNPAY gọi đến) - Nơi chính thức cập nhật DB.
         [HttpGet("vnpay-ipn")]
+        [AllowAnonymous]
         [Produces("application/json")]
         public async Task<IActionResult> VnpayIpnCallback([FromQuery] Dictionary<string, string> vnpayData)
         {
@@ -270,6 +271,111 @@ namespace OrderService.Api.Controllers
         {
             // Logic Cancel Order
             return Ok(new { message = "Cancel logic needs implementation." });
+        }
+
+        /// 1. API: Tổng doanh thu tháng này từ các order đã thanh toán
+        [HttpGet("reports/revenue-this-month")]
+        [Authorize(Roles = "Admin,Seller")] // Chỉ Admin/Seller mới xem được báo cáo chung
+        public async Task<IActionResult> GetTotalRevenueThisMonth()
+        {
+            try
+            {
+                var revenue = await _service.GetTotalRevenueThisMonthAsync();
+                return Ok(new
+                {
+                    Month = $"{DateTime.UtcNow:yyyy-MM}",
+                    TotalRevenue = revenue
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Lỗi khi lấy doanh thu: {ex.Message}" });
+            }
+        }
+
+        /// 2. API: Tổng số đơn hàng và tổng sản phẩm đã bán được
+        [HttpGet("reports/statistics")]
+        [Authorize(Roles = "Admin,Seller")] // Chỉ Admin/Seller mới xem được thống kê chung
+        public async Task<IActionResult> GetOrderAndProductStatistics()
+        {
+            try
+            {
+                var stats = await _service.GetOrderAndProductStatisticsAsync();
+                return Ok(new
+                {
+                    TotalOrders = stats.TotalOrders,
+                    TotalProductsSold = stats.TotalProductsSold
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Lỗi khi lấy thống kê: {ex.Message}" });
+            }
+        }
+
+
+        // ==========================
+        // CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG
+        // ==========================
+
+        /// 3. API: Update status của đơn hàng theo orderId (Sử dụng OrderStatus enum)
+        [HttpPut("{orderId:int}/status")]
+        [Authorize(Roles = "Admin,Seller")]
+        public async Task<IActionResult> UpdateOrderStatus(int orderId, [FromQuery] OrderStatus newStatus)
+        {
+            if (!Enum.IsDefined(typeof(OrderStatus), newStatus))
+            {
+                return BadRequest("Trạng thái đơn hàng không hợp lệ.");
+            }
+
+            try
+            {
+                var updatedOrder = await _service.UpdateOrderStatusAsync(orderId, newStatus);
+                return Ok(new
+                {
+                    OrderId = orderId,
+                    NewStatus = newStatus.ToString(),
+                    Message = "Cập nhật trạng thái đơn hàng thành công."
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Lỗi hệ thống khi cập nhật trạng thái: {ex.Message}" });
+            }
+        }
+
+        // ==========================
+        // TÌM KIẾM ĐƠN HÀNG THEO NHIỀU TIÊU CHÍ
+        // ==========================
+
+        /// 4. API: Lấy order theo status, orderId, bookstoreId (có thể tùy ý nhập hoặc bỏ trống)
+        // Thay thế tên API cũ hoặc tạo mới. Tôi tạo mới để rõ ràng hơn.
+        [HttpGet("search")]
+        [Authorize(Roles = "Admin,Seller")] // Thường là API dành cho quản trị
+        public async Task<IActionResult> SearchOrders(
+            [FromQuery] int? orderId,
+            [FromQuery] Guid? customerId,
+            [FromQuery] int? bookstoreId,
+            [FromQuery] OrderStatus? status,
+            int page = 1,
+            int pageSize = 10)
+        {
+            try
+            {
+                // customerId có thể được lấy từ Claim (nếu là Buyer) hoặc truyền vào (nếu là Admin/Seller)
+                // Logic hiện tại cho phép truyền vào.
+
+                var result = await _service.SearchOrdersAsync(orderId, customerId, bookstoreId, status, page, pageSize);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Lỗi khi tìm kiếm đơn hàng: {ex.Message}" });
+            }
         }
     }
 }
