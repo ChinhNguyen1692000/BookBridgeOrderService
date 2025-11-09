@@ -336,19 +336,11 @@ namespace OrderService.Application.Services
 
         public async Task<decimal> GetTotalRevenueThisMonthAsync()
         {
+            var nowUtc = DateTime.UtcNow;
             // Lấy ngày đầu tiên của tháng hiện tại
-            var firstDayOfMonth = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
-
-            // Chỉ tính tổng tiền của các đơn hàng đã thanh toán (PaymentStatus = Paid)
-            // Giả định Order.OrderDate là thời điểm tạo đơn hàng, ta sẽ lọc theo thời điểm PaidDate hoặc OrderDate nếu PaidDate chưa có.
-            // Để chính xác nhất, ta nên dùng PaidDate nếu có, hoặc OrderDate nếu là đơn COD/thanh toán thành công ngay.
-            // Ở đây, tôi dùng OrderDate để đơn giản hóa, giả định tất cả đơn đã thanh toán/xác nhận trong tháng này.
-            // Nếu bạn muốn chính xác hơn, cần đảm bảo PaymentTransaction.PaidDate được set đúng.
-
+            var firstDayOfMonth = new DateTime(nowUtc.Year, nowUtc.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+            
             var revenue = await _paymentTxRepo.GetTotalRevenueFromPaidTransactionsInMonthAsync(firstDayOfMonth);
-
-            // Lưu ý: Cần triển khai phương thức GetTotalRevenueFromPaidTransactionsInMonthAsync trong PaymentTransactionRepository
-
             return revenue;
         }
 
