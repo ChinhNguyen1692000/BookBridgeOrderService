@@ -102,14 +102,12 @@ namespace OrderService.Domain.Entities
     public enum PaymentMethod
     {
         COD = 1,
-        VietQR = 2,
-        EWallet = 3
-    }
+        Online = 2
+}
 
     public enum PaymentProvider
     {
         None = 0,
-        VNPay = 1,
-        MoMo = 2
+        VNPay = 1
     }
 }
