@@ -285,7 +285,7 @@ namespace OrderService.Application.Services
             return savedTx;
         }
 
-        // --- PHƯƠNG THỨC XỬ LÝ CALLBACK (IPN) (Giữ nguyên) ---
+        // --- PHƯƠNG THỨC XỬ LÝ CALLBACK (IPN)
         public async Task<bool> HandlePaymentCallback(string transactionId, IDictionary<string, string> payload)
         {
             if (string.IsNullOrWhiteSpace(transactionId)) return false;
